@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的自由职业工作台</title>
+<style>
+:root{
+  --bg:#f2f3f9; --card:#ffffff; --ink:#23263b; --muted:#7b7f98; --sub:#5b5f78;
+  --primary:#5b5fe9; --primary-soft:#eef0ff; --accent:#ff8a3d; --accent-soft:#fff3e9;
+  --green:#22b573; --green-soft:#e5f8ef; --red:#ef4d5c; --red-soft:#fdecee;
+  --blue:#3d8bfd; --blue-soft:#e8f1ff; --purple:#8b5cf6; --purple-soft:#f1ebff;
+  --yellow:#f5b40a; --yellow-soft:#fef6dd;
+  --line:#e7e9f4; --radius:14px;
+  --shadow:0 1px 2px rgba(23,25,60,.05),0 8px 24px rgba(23,25,60,.06);
+  --sidebar-w:228px;
+}
+[data-theme="dark"]{
+  --bg:#14151f; --card:#1d1f2e; --ink:#e9eaf5; --muted:#9094ad; --sub:#b6b9cd;
+  --primary:#7c80f5; --primary-soft:#262a44; --accent:#ff9d5c; --accent-soft:#332a22;
+  --green:#34c787; --green-soft:#17302a; --red:#f26d7a; --red-soft:#332127;
+  --blue:#5c9dff; --blue-soft:#1b2a42; --purple:#a78bfa; --purple-soft:#2a2442;
+  --yellow:#f5c24e; --yellow-soft:#33301c;
+  --line:#2c2f45; --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.3);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit;font-size:14px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;outline:none;transition:border .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--primary)}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.7}
+textarea{resize:vertical;min-height:70px}
+a{color:var(--primary);text-decoration:none}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ===== 布局 ===== */
+#app{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-w);background:var(--card);border-right:1px solid var(--line);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:50;transition:transform .25s}
+.logo{display:flex;align-items:center;gap:10px;padding:20px 18px 14px}
+.logo .logo-icon{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--primary),#9d6bff);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0}
+.logo b{font-size:15.5px;letter-spacing:.3px}
+.logo small{display:block;font-size:11px;color:var(--muted);font-weight:400}
+.nav{flex:1;overflow-y:auto;padding:6px 10px}
+.nav a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;color:var(--sub);font-size:13.5px;margin-bottom:2px;transition:background .15s,color .15s;cursor:pointer;user-select:none}
+.nav a .ic{width:20px;text-align:center;font-size:16px;flex-shrink:0}
+.nav a:hover{background:var(--bg);color:var(--ink)}
+.nav a.active{background:var(--primary-soft);color:var(--primary);font-weight:600}
+.sidebar-foot{padding:12px;border-top:1px solid var(--line);display:flex;gap:8px}
+.sidebar-foot .icon-btn{flex:1;padding:8px;border-radius:10px;background:var(--bg);font-size:15px}
+.sidebar-foot .icon-btn:hover{background:var(--primary-soft)}
+.mobile-top{display:none;position:sticky;top:0;z-index:60;background:var(--card);border-bottom:1px solid var(--line);padding:10px 14px;align-items:center;gap:10px}
+.mobile-top .burger{font-size:20px;padding:4px 8px}
+
+.main{flex:1;margin-left:var(--sidebar-w);padding:22px 26px 60px;min-width:0}
+.view{display:none;animation:fade .25s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.page-head h1{font-size:21px;font-weight:700}
+.page-head p{color:var(--muted);font-size:13px;margin-top:2px}
+.page-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* ===== 通用组件 ===== */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:13.5px;font-weight:600;background:var(--primary);color:#fff;transition:filter .15s,transform .1s}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--card);color:var(--sub);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--bg);color:var(--ink)}
+.btn.danger{background:var(--red)}
+.btn.sm{padding:5px 11px;font-size:12.5px;border-radius:8px}
+.btn.warn{background:var(--accent)}
+.btn.green{background:var(--green)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.card+.card{margin-top:16px}
+.card h3{font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3 .sp{flex:1}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.g2,.g3,.g4{grid-template-columns:1fr}.sidebar{transform:translateX(-100%)}.sidebar.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.2)}.main{margin-left:0;padding:16px 14px 80px}.mobile-top{display:flex}}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.tag.work{background:var(--primary-soft);color:var(--primary)}
+.tag.learn{background:var(--purple-soft);color:var(--purple)}
+.tag.life{background:var(--green-soft);color:var(--green)}
+.tag.ent{background:var(--accent-soft);color:var(--accent)}
+.tag.blue{background:var(--blue-soft);color:var(--blue)}
+.tag.red{background:var(--red-soft);color:var(--red)}
+.tag.yellow{background:var(--yellow-soft);color:#c99200}
+.tag.gray{background:var(--bg);color:var(--muted)}
+.empty{text-align:center;color:var(--muted);padding:34px 10px;font-size:13px}
+.empty .big{font-size:34px;display:block;margin-bottom:8px}
+input[type=checkbox]{width:17px;height:17px;accent-color:var(--primary);cursor:pointer;flex-shrink:0}
+.pill-input{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:5px 12px;border-radius:20px;background:var(--bg);border:1px solid var(--line);font-size:12.5px;color:var(--sub);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--primary);color:var(--primary)}
+.chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.num{font-variant-numeric:tabular-nums}
+progress{width:100%;height:8px;border-radius:8px;overflow:hidden;appearance:none}
+progress::-webkit-progress-bar{background:var(--bg);border-radius:8px}
+progress::-webkit-progress-value{border-radius:8px;background:linear-gradient(90deg,var(--primary),#9d6bff)}
+.row{display:flex;align-items:center;gap:10px}
+.wrap{flex-wrap:wrap}
+.between{justify-content:space-between}
+.flex1{flex:1;min-width:0}
+.hide{display:none!important}
+
+/* ===== 弹窗 ===== */
+.modal-mask{position:fixed;inset:0;background:rgba(15,17,35,.5);backdrop-filter:blur(3px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:6vh 16px;overflow-y:auto}
+.modal-mask.open{display:flex}
+.modal{background:var(--card);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);width:100%;max-width:520px;padding:20px;animation:pop .2s ease}
+@keyframes pop{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
+.modal h3{font-size:16px;margin-bottom:14px}
+.modal .f{margin-bottom:12px}
+.modal .f label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px;font-weight:600}
+.modal .f input,.modal .f select,.modal .f textarea{width:100%}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+
+/* ===== 待办 ===== */
+.todo-row{display:flex;align-items:flex-start;gap:10px;padding:10px 4px;border-bottom:1px dashed var(--line)}
+.todo-row:last-child{border-bottom:none}
+.todo-body{flex:1;min-width:0}
+.todo-body .t{font-size:14px;transition:opacity .2s}
+.todo-row.done .t{text-decoration:line-through;opacity:.55}
+.todo-meta{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.todo-prio{width:4px;border-radius:4px;align-self:stretch;margin-top:3px;flex-shrink:0}
+.stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+@media(max-width:900px){.stat-cards{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+.stat-card .v{font-size:22px;font-weight:700;margin-top:2px}
+.stat-card .l{font-size:12px;color:var(--muted)}
+.stat-card .e{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ===== 番茄钟 ===== */
+.pomo-wrap{display:flex;gap:16px;flex-wrap:wrap}
+.pomo-main{flex:1;min-width:280px;text-align:center;padding:26px 20px}
+.pomo-ring{position:relative;width:220px;height:220px;margin:10px auto 6px}
+.pomo-ring svg{transform:rotate(-90deg)}
+.pomo-time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pomo-time .mm{font-size:44px;font-weight:800;letter-spacing:1px}
+.pomo-time .st{font-size:12.5px;color:var(--muted)}
+.pomo-ctrl{display:flex;gap:10px;justify-content:center;margin-top:8px;flex-wrap:wrap}
+.pomo-side{width:240px;flex-shrink:0}
+
+/* ===== 便签 ===== */
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.note-card{border-radius:12px;padding:13px 14px;cursor:pointer;position:relative;box-shadow:var(--shadow);border:1px solid rgba(0,0,0,.04);transition:transform .15s;white-space:pre-wrap;word-break:break-word}
+.note-card:hover{transform:translateY(-2px)}
+.note-card .nt{font-size:13px;line-height:1.7}
+.note-card .nb{display:flex;justify-content:space-between;align-items:center;margin-top:9px;font-size:11px;color:var(--muted)}
+.note-card.pin{outline:2px solid var(--accent)}
+.note-color{width:14px;height:14px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.1);cursor:pointer;flex-shrink:0}
+.note-color.on{outline:2px solid var(--primary);outline-offset:2px}
+
+/* ===== 素材 ===== */
+.bm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.bm-card{display:flex;flex-direction:column;gap:6px}
+.bm-card .url{font-size:12px;color:var(--muted);word-break:break-all}
+.bm-card .host{font-size:11px}
+.bm-actions{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+
+/* ===== 看板 ===== */
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start}
+@media(max-width:1000px){.kanban{grid-template-columns:repeat(2,1fr)}}
+.kan-col{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;min-height:120px}
+.kan-col h4{font-size:12.5px;display:flex;justify-content:space-between;align-items:center;padding:4px 6px 10px}
+.kan-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:9px;box-shadow:var(--shadow);cursor:pointer;transition:transform .12s}
+.kan-card:hover{transform:translateY(-2px)}
+.kan-card b{font-size:13.5px;display:block}
+.kan-card .km{font-size:11.5px;color:var(--muted);margin-top:4px}
+.kan-card .amt{color:var(--green);font-weight:700}
+.kan-card .due{color:var(--accent)}
+.kan-card .overdue{color:var(--red);font-weight:600}
+
+/* ===== 视频笔记 ===== */
+.vid-item{border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:11px;background:var(--card)}
+.vid-item .mk{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-top:1px dashed var(--line);margin-top:6px;font-size:13px}
+.vid-item .mk .tm{color:var(--primary);font-weight:700;white-space:nowrap;cursor:pointer}
+
+/* ===== 习惯 ===== */
+.habit-row{display:flex;align-items:center;gap:13px;padding:13px 4px;border-bottom:1px dashed var(--line)}
+.habit-row:last-child{border-bottom:none}
+.habit-ic{width:42px;height:42px;border-radius:12px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.habit-streak{font-size:12px;color:var(--muted)}
+.check-btn{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:15px;color:transparent;transition:all .2s;flex-shrink:0}
+.check-btn:hover{border-color:var(--green)}
+.habit-row.done .check-btn{background:var(--green);border-color:var(--green);color:#fff}
+.habit-row.done .hab-n{text-decoration:line-through;opacity:.55}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px}
+.cal .day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;background:var(--bg);font-size:10.5px;color:var(--muted)}
+.cal .day.on{background:var(--green-soft);color:var(--green);font-weight:700}
+.cal .day.today{outline:2px solid var(--primary)}
+
+/* ===== 点子 ===== */
+.idea-card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--card)}
+.idea-score{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.score-chip{font-size:11px;padding:2px 9px;border-radius:20px;background:var(--bg)}
+.stars{color:var(--yellow);letter-spacing:1px}
+
+/* ===== 学习笔记 ===== */
+.learn-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.learn-card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--card);cursor:pointer;transition:transform .15s}
+.learn-card:hover{transform:translateY(-2px)}
+.learn-card .lc{font-size:12.5px;color:var(--muted);white-space:pre-wrap;max-height:84px;overflow:hidden;margin-top:6px}
+
+/* ===== 十题 ===== */
+.quiz-q{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.quiz-q .qq{font-size:15.5px;font-weight:700;margin-bottom:12px}
+.quiz-q .qtag{font-size:11px;margin-bottom:10px}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all .15s;font-size:13.5px}
+.opt:hover{border-color:var(--primary)}
+.opt .k{width:22px;height:22px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;color:var(--muted)}
+.opt.sel{border-color:var(--primary);background:var(--primary-soft)}
+.opt.sel .k{background:var(--primary);color:#fff}
+.opt.right{border-color:var(--green);background:var(--green-soft)}
+.opt.right .k{background:var(--green);color:#fff}
+.opt.wrong{border-color:var(--red);background:var(--red-soft)}
+.opt.wrong .k{background:var(--red);color:#fff}
+.opt.lock{pointer-events:none}
+.explain{margin-top:12px;background:var(--bg);border-radius:10px;padding:12px 14px;font-size:13px;border-left:4px solid var(--primary)}
+.explain .ok{color:var(--green);font-weight:700}
+.explain .no{color:var(--red);font-weight:700}
+
+/* ===== 时间追踪 ===== */
+.time-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:900px){.time-grid{grid-template-columns:1fr}}
+.timeline{position:relative;padding-left:56px}
+.tl-hour{display:flex;align-items:center;height:40px;position:relative;font-size:11px;color:var(--muted)}
+.tl-hour::before{content:"";position:absolute;left:-56px;right:0;top:20px;border-top:1px dashed var(--line)}
+.tl-hour span{position:absolute;left:-56px;top:4px;width:46px;text-align:right}
+.tl-seg{position:absolute;height:38px;top:1px;border-radius:8px;display:flex;align-items:center;overflow:hidden;padding:0 8px;font-size:10.5px;color:#fff;white-space:nowrap;text-overflow:ellipsis;z-index:2;cursor:default}
+.tl-row{position:relative;height:40px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.legend .lg{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted)}
+.legend .dot{width:10px;height:10px;border-radius:3px}
+.sugg{display:flex;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line);align-items:flex-start}
+.sugg:last-child{border-bottom:none}
+.sugg .si{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
+.sugg.good .si{background:var(--green-soft)}
+.sugg.warn .si{background:var(--yellow-soft)}
+.sugg.bad .si{background:var(--red-soft)}
+
+/* ===== 概览 ===== */
+.hero{background:linear-gradient(135deg,var(--primary),#8b5cf6);border-radius:16px;padding:22px 24px;color:#fff;margin-bottom:18px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+.hero h2{font-size:19px}
+.hero .date{opacity:.85;font-size:13px}
+.hero .hi{font-size:13.5px;opacity:.92;margin-top:4px;max-width:520px}
+.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+@media(max-width:900px){.quick-grid{grid-template-columns:repeat(2,1fr)}}
+.quick{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:var(--shadow)}
+.quick:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(23,25,60,.12)}
+.quick .qi{font-size:22px}
+.quick b{display:block;margin:6px 0 2px;font-size:14px}
+.quick small{color:var(--muted);font-size:12px;line-height:1.5;display:block}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--bg);padding:10px 20px;border-radius:10px;font-size:13.5px;z-index:200;transition:transform .3s;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.voice-on{animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,77,92,.5)}50%{box-shadow:0 0 0 10px rgba(239,77,92,0)}}
+.mic-btn{background:var(--red);color:#fff;border-radius:50%;width:38px;height:38px;font-size:17px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;transition:transform .15s}
+.mic-btn:hover{transform:scale(1.06)}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:20px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;margin-left:auto}
+table.tbl{width:100%;border-collapse:collapse}
+table.tbl th{font-size:12px;color:var(--muted);text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);font-weight:600}
+table.tbl td{padding:8px 10px;border-bottom:1px dashed var(--line);font-size:13px;vertical-align:top}
+.del-x{color:var(--muted);font-size:15px;padding:2px 6px;border-radius:6px;opacity:.7}
+.del-x:hover{color:var(--red);background:var(--red-soft);opacity:1}
+.hr{height:1px;background:var(--line);margin:12px 0}
+details.simple summary{cursor:pointer;font-size:13px;color:var(--sub);padding:4px 0}
+details.simple summary:hover{color:var(--primary)}
+</style>
+<meta name="theme-color" content="#5b5fe9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="工作台">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+</head>
+<body>
+<div id="app">
+  <div class="mobile-top">
+    <button class="burger" id="burgerBtn">☰</button>
+    <b>我的工作台</b>
+  </div>
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-icon">🎨</div>
+      <div><b>我的自由职业工作台</b><small>design · freelance · growth</small></div>
+    </div>
+    <nav class="nav" id="nav">
+      <a data-view="dashboard" class="active"><span class="ic">🏠</span>今日概览</a>
+      <a data-view="todos"><span class="ic">✅</span>今日待办<span class="badge hide" id="badgeTodo">0</span></a>
+      <a data-view="pomo"><span class="ic">🍅</span>番茄专注</a>
+      <a data-view="notes"><span class="ic">💡</span>灵感便签</a>
+      <a data-view="bookmarks"><span class="ic">🔖</span>素材收藏</a>
+      <a data-view="projects"><span class="ic">📁</span>接稿项目</a>
+      <a data-view="video"><span class="ic">🎬</span>视频笔记</a>
+      <a data-view="habits"><span class="ic">🧘</span>习惯打卡</a>
+      <a data-view="ideas"><span class="ic">🚀</span>创业点子</a>
+      <a data-view="learn"><span class="ic">📚</span>学习笔记</a>
+      <a data-view="quiz"><span class="ic">📝</span>每日十题</a>
+      <a data-view="time"><span class="ic">⏱️</span>时间追踪</a>
+    </nav>
+    <div class="sidebar-foot">
+      <button class="icon-btn" id="themeBtn" title="切换深浅主题">🌓</button>
+      <button class="icon-btn" id="backupBtn" title="导出/导入数据备份">💾</button>
+      <button class="icon-btn" id="helpBtn" title="使用说明">❓</button>
+    </div>
+  </aside>
+
+  <main class="main" id="main">
+
+    <!-- ============ 概览 ============ -->
+    <section class="view active" id="view-dashboard">
+      <div class="hero" id="heroBox">
+        <div>
+          <h2 id="heroTitle">早上好 ☀️</h2>
+          <div class="date" id="heroDate"></div>
+          <div class="hi" id="heroHi"></div>
+        </div>
+        <div class="page-actions">
+          <button class="btn ghost" data-goto="time">⏱️ 记录时间</button>
+          <button class="btn ghost" data-goto="todos">📋 查看待办</button>
+        </div>
+      </div>
+      <div class="quick-grid" id="quickGrid"></div>
+      <div class="grid g2">
+        <div class="card"><h3>📌 今日待办 <span class="sp"></span><span class="muted small" id="dashTodoStat"></span></h3><div id="dashTodos"></div><div class="hr"></div><a data-goto="todos" style="font-size:13px">去待办清单 →</a></div>
+        <div class="card"><h3>⏱️ 今日时间分布 <span class="sp"></span><button class="btn ghost sm" data-goto="time">详情</button></h3><div id="dashTime"></div></div>
+        <div class="card"><h3>🧘 今日习惯 <span class="sp"></span><button class="btn ghost sm" data-goto="habits">打卡</button></h3><div id="dashHabits"></div></div>
+        <div class="card"><h3>📝 今日十题 <span class="sp"></span><button class="btn ghost sm" data-goto="quiz">开始</button></h3><div id="dashQuiz"></div></div>
+        <div class="card"><h3>📁 进行中的项目 <span class="sp"></span><a data-goto="projects" style="font-size:13px">看板 →</a></h3><div id="dashProjects"></div></div>
+        <div class="card"><h3>💡 最近灵感 <span class="sp"></span><button class="btn ghost sm" data-goto="notes">便签</button></h3><div id="dashNotes"></div></div>
+      </div>
+    </section>
+
+    <!-- ============ 待办 ============ -->
+    <section class="view" id="view-todos">
+      <div class="page-head">
+        <div><h1>✅ 今日待办</h1><p>事情太杂容易忘？全部记在这里，按分类管理。</p></div>
+        <div class="page-actions">
+          <button class="btn" id="todoAddBtn">＋ 添加待办</button>
+        </div>
+      </div>
+      <div class="stat-cards" id="todoStats"></div>
+      <div class="card">
+        <div class="pill-input" id="todoFilter" style="margin-bottom:6px">
+          <span class="chip on" data-f="all">全部</span><span class="chip" data-f="work">工作</span><span class="chip" data-f="learn">学习</span><span class="chip" data-f="life">生活</span><span class="chip" data-f="todo">未完成</span><span class="chip" data-f="done">已完成</span>
+        </div>
+        <div id="todoList"></div>
+      </div>
+    </section>
+
+    <!-- ============ 番茄钟 ============ -->
+    <section class="view" id="view-pomo">
+      <div class="page-head"><div><h1>🍅 番茄专注</h1><p>25 分钟专注 + 5 分钟休息，白天工作更高效。</p></div></div>
+      <div class="pomo-wrap">
+        <div class="card pomo-main">
+          <h3 id="pomoLabel">工作时段</h3>
+          <div class="pomo-ring">
+            <svg width="220" height="220"><circle cx="110" cy="110" r="100" fill="none" stroke="var(--line)" stroke-width="12"/><circle id="pomoArc" cx="110" cy="110" r="100" fill="none" stroke="var(--primary)" stroke-width="12" stroke-linecap="round" stroke-dasharray="628.3" stroke-dashoffset="0" style="transition:stroke-dashoffset 1s linear,stroke .3s"/></svg>
+            <div class="pomo-time"><div class="mm num" id="pomoTime">25:00</div><div class="st" id="pomoState">准备开始</div></div>
+          </div>
+          <div class="pomo-ctrl">
+            <button class="btn green" id="pomoStart">▶ 开始</button>
+            <button class="btn ghost" id="pomoPause" disabled>⏸ 暂停</button>
+            <button class="btn ghost" id="pomoReset" disabled>↺ 重置</button>
+          </div>
+          <div class="pill-input" style="justify-content:center;margin-top:14px">
+            <span class="chip on" data-min="25">25 工作</span><span class="chip" data-min="5">5 休息</span><span class="chip" data-min="15">15 工作</span><span class="chip" data-min="50">50 工作</span><span class="chip" data-min="90">90 深度</span>
+          </div>
+          <div class="muted small" style="margin-top:12px" id="pomoNote"></div>
+        </div>
+        <div class="card pomo-side">
+          <h3>📊 今日统计</h3>
+          <div id="pomoStat"></div>
+          <div class="hr"></div>
+          <h3>🗓 最近 7 天</h3>
+          <div id="pomoWeek"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 便签 ============ -->
+    <section class="view" id="view-notes">
+      <div class="page-head">
+        <div><h1>💡 灵感便签板</h1><p>接稿灵感、文案点子、突然的想法，随手记下。</p></div>
+        <div class="page-actions">
+          <button class="btn" id="noteAddBtn">＋ 新便签</button>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="row">
+          <input class="flex1" id="noteSearch" placeholder="🔍 搜索便签内容或标签...">
+          <button class="btn ghost" id="noteSearchClear">清除</button>
+        </div>
+      </div>
+      <div class="notes-grid" id="noteList"></div>
+    </section>
+
+    <!-- ============ 素材 ============ -->
+    <section class="view" id="view-bookmarks">
+      <div class="page-head">
+        <div><h1>🔖 素材收藏夹</h1><p>跨平台的配色、字体、灵感链接，统一存到这里。</p></div>
+        <div class="page-actions"><button class="btn" id="bmAddBtn">＋ 收藏素材</button></div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="row wrap">
+          <input class="flex1" id="bmUrl" placeholder="🔗 粘贴链接，例如 https://www.behance.net/...">
+          <input id="bmTitle" placeholder="名称（可留空自动识别）" style="width:220px">
+          <button class="btn green" id="bmQuick">收藏</button>
+        </div>
+        <div class="pill-input" id="bmFilter" style="margin-top:12px">
+          <span class="chip on" data-f="all">全部</span><span class="chip" data-f="color">🎨 配色</span><span class="chip" data-f="font">🔤 字体</span><span class="chip" data-f="illus">🖼 插画参考</span><span class="chip" data-f="layout">📐 排版</span><span class="chip" data-f="tut">📖 教程</span><span class="chip" data-f="tool">🛠 工具</span><span class="chip" data-f="other">📦 其他</span>
+        </div>
+      </div>
+      <div class="bm-grid" id="bmList"></div>
+    </section>
+          <input class="flex1" id="bmUrl" placeholder="🔗 粘贴链接，例如 https://www.behance.net/...">
+          <input id="bmTitle" placeholder="名称（可留空自动识别）" style="width:220px">
+          <button class="btn green" id="bmQuick">收藏</button>
+        </div>
+        <div class="pill-input" id="bmFilter" style="margin-top:12px">
+          <span class="chip on" data-f="all">全部</span><span class="chip" data-f="color">🎨 配色</span><span class="chip" data-f="font">🔤 字体</span><span class="chip" data-f="illus">🖼 插画参考</span><span class="chip" data-f="layout">📐 排版</span><span class="chip" data-f="tut">📖 教程</span><span class="chip" data-f="tool">🛠 工具</span><span class="chip" data-f="other">📦 其他</span>
+        </div>
+      </div>
+      <div class="bm-grid" id="bmList"></div>
+    </section>
+
+    <!-- ============ 接稿项目 ============ -->
+    <section class="view" id="view-projects">
+      <div class="page-head">
+        <div><h1>📁 接稿项目</h1><p>从接洽到交付，进度一目了然。</p></div>
+        <div class="page-actions"><button class="btn" id="projAddBtn">＋ 新项目</button></div>
+      </div>
+      <div class="stat-cards" id="projStats"></div>
+      <div class="kanban" id="kanban"></div>
+    </section>
+
+    <!-- ============ 视频笔记 ============ -->
+    <section class="view" id="view-video">
+      <div class="page-head">
+        <div><h1>🎬 视频笔记</h1><p>看教程、看视频时边看边记，带时间戳回看超方便。</p></div>
+        <div class="page-actions"><button class="btn" id="vidAddBtn">＋ 新建视频笔记</button></div>
+      </div>
+      <div id="vidList"></div>
+    </section>
+
+    <!-- ============ 习惯 ============ -->
+    <section class="view" id="view-habits">
+      <div class="page-head">
+        <div><h1>🧘 习惯打卡</h1><p>每天 7:40–8:40 瑜伽，还有其他想坚持的习惯。</p></div>
+        <div class="page-actions"><button class="btn" id="habitAddBtn">＋ 添加习惯</button></div>
+      </div>
+      <div class="grid g2">
+        <div class="card"><h3>今日打卡</h3><div id="habitList"></div></div>
+        <div class="card"><h3>本月日历</h3><div id="habitCal"></div></div>
+      </div>
+    </section>
+
+    <!-- ============ 创业点子 ============ -->
+    <section class="view" id="view-ideas">
+      <div class="page-head">
+        <div><h1>🚀 创业点子库</h1><p>想法先记下来，再从可行性、兴趣、成本三个维度评估。</p></div>
+        <div class="page-actions"><button class="btn" id="ideaAddBtn">＋ 记录点子</button></div>
+      </div>
+      <div class="grid" id="ideaList"></div>
+    </section>
+
+    <!-- ============ 学习笔记 ============ -->
+    <section class="view" id="view-learn">
+      <div class="page-head">
+        <div><h1>📚 学习笔记</h1><p>产品经理、AI 工具、GitHub 开源项目使用攻略，都记在这里。</p></div>
+        <div class="page-actions">
+          <button class="btn ghost" id="learnGhBtn">🐙 GitHub 项目笔记</button>
+          <button class="btn" id="learnAddBtn">＋ 新建笔记</button>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="row wrap">
+          <input class="flex1" id="learnSearch" placeholder="🔍 搜索笔记...">
+          <div class="pill-input" id="learnFilter">
+            <span class="chip on" data-f="all">全部</span><span class="chip" data-f="pm">产品经理</span><span class="chip" data-f="ai">AI 研究</span><span class="chip" data-f="github">GitHub 项目</span><span class="chip" data-f="design">设计</span><span class="chip" data-f="other">其他</span>
+          </div>
+        </div>
+      </div>
+      <div class="learn-list" id="learnList"></div>
+    </section>
+
+    <!-- ============ 每日十题 ============ -->
+    <section class="view" id="view-quiz">
+      <div class="page-head">
+        <div><h1>📝 每日十题</h1><p>每天 10 道不同的题，做完立即看答案与解析，巩固学习。</p></div>
+        <div class="page-actions"><button class="btn ghost" id="quizHistBtn">📊 历史成绩</button></div>
+      </div>
+      <div id="quizBox"></div>
+    </section>
+
+    <!-- ============ 时间追踪 ============ -->
+    <section class="view" id="view-time">
+      <div class="page-head">
+        <div><h1>⏱️ 时间追踪</h1><p>随时记录你在干嘛、用了多久，看看时间都去哪了。</p></div>
+      </div>
+      <div class="time-grid">
+        <div class="card">
+          <h3>🎤 快速记录 <span class="sp"></span><span class="muted small">支持语音输入</span></h3>
+          <div class="row" style="margin-bottom:10px">
+            <button class="mic-btn" id="micBtn" title="点击说话，例如：写文案 一小时">🎤</button>
+            <input class="flex1" id="timeAct" placeholder="在做什么？例如：写文案 / 看B站视频 / 做瑜伽">
+          </div>
+          <div class="row" style="margin-bottom:10px;flex-wrap:wrap">
+            <input id="timeStart" placeholder="开始时间(可选) 如 14:30" style="width:150px">
+            <input id="timeDur" placeholder="用了多久 如 60" style="width:100px" type="number" min="1">
+            <select id="timeUnit" style="width:80px"><option value="min">分钟</option><option value="hour">小时</option></select>
+            <select id="timeCat" style="width:110px"><option value="auto">自动分类</option><option value="work">工作</option><option value="create">创作</option><option value="learn">学习</option><option value="fit">健身</option><option value="ent">娱乐</option><option value="sleep">睡眠</option><option value="life">生活</option><option value="other">其他</option></select>
+          </div>
+          <div class="row">
+            <button class="btn green sm" id="timeSave">✔ 保存记录</button>
+            <button class="btn ghost sm" id="timeTimer">⏱ 开始计时</button>
+            <span class="muted small" id="timeTimerLabel"></span>
+          </div>
+          <div class="hr"></div>
+          <div class="row between" style="margin-bottom:8px"><b style="font-size:13.5px">今日记录</b><span class="muted small" id="timeTodaySum"></span></div>
+          <div id="timeTodayList" style="max-height:300px;overflow-y:auto"></div>
+        </div>
+        <div class="card">
+          <h3>📊 今日 24 小时时间轴</h3>
+          <div id="timeTimeline"></div>
+          <div class="legend" id="timeLegend"></div>
+          <div class="hr"></div>
+          <h3>📈 本周时长分布</h3>
+          <div id="timeWeek"></div>
+          <div class="hr"></div>
+          <h3>💬 给你的调整建议</h3>
+          <div id="timeSuggest"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-mask" id="modalMask"><div class="modal" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ================= 工具函数 ================= */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const today = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const pad = n => String(n).padStart(2,'0');
+const fmtMin = m => m>=60 ? Math.floor(m/60)+'小时'+(m%60?m%60+'分':'') : m+'分钟';
+function dstr(off){ const d=new Date(); d.setDate(d.getDate()+off); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function parseDate(s){ const p=s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+function weekdayCN(d){ return ['周日','周一','周二','周三','周四','周五','周六'][new Date(d).getDay()]; }
+function todayCN(){ const d=new Date(); return (d.getMonth()+1)+'月'+d.getDate()+'日 '+['周日','周一','周二','周三','周四','周五','周六'][d.getDay()]; }
+function greet(){ const h=new Date().getHours(); return h<6?'夜深了':h<9?'早上好':h<12?'上午好':h<14?'中午好':h<18?'下午好':'晚上好'; }
+function randomSeed(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function shuffle(arr, rnd){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+/* ================= 存储层 ================= */
+const STORE_KEY = 'freelance_workbench_v1';
+function defaults(){ return {
+  todos: [], notes: [], bookmarks: [], projects: [], videos: [], habits: [], ideas: [], learn: [], quizHist: [], time: [],
+  settings: { theme:'light' }
+}; }
+let DB = defaults();
+function load(){ try{ const raw = localStorage.getItem(STORE_KEY); if(raw){ DB = Object.assign(defaults(), JSON.parse(raw), {settings:Object.assign({theme:'light'}, (JSON.parse(raw).settings||{}))}); } }catch(e){ DB = defaults(); } }
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(DB)); }catch(e){ toast('⚠️ 保存失败，浏览器存储空间可能已满'); } }
+load();
+
+/* ================= 弹窗 ================= */
+function openModal(html){ $('#modalBox').innerHTML = html; $('#modalMask').classList.add('open'); }
+function closeModal(){ $('#modalMask').classList.remove('open'); $('#modalBox').innerHTML=''; }
+$('#modalMask').addEventListener('click', e => { if(e.target.id==='modalMask') closeModal(); });
+let toastTimer=null;
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200); }
+
+/* ================= 导航 ================= */
+function switchView(name){
+  $$('.nav a').forEach(a=>a.classList.toggle('active', a.dataset.view===name));
+  $$('.view').forEach(v=>v.classList.toggle('active', v.id==='view-'+name));
+  $('#sidebar').classList.remove('open');
+  window.scrollTo({top:0});
+  const fn = RENDER[name]; if(fn) fn();
+}
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-goto]');
+  if(g){ switchView(g.dataset.goto); return; }
+  const nav = e.target.closest('.nav a[data-view]');
+  if(nav) switchView(nav.dataset.view);
+});
+$('#burgerBtn').addEventListener('click', ()=>$('#sidebar').classList.toggle('open'));
+
+/* ================= 主题 ================= */
+function applyTheme(t){ document.documentElement.dataset.theme = t; $('#themeBtn').textContent = t==='dark'?'☀️':'🌙'; }
+$('#themeBtn').addEventListener('click', ()=>{ DB.settings.theme = DB.settings.theme==='dark'?'light':'dark'; applyTheme(DB.settings.theme); save(); });
+applyTheme(DB.settings.theme||'light');
+
+/* ================= 备份 ================= */
+$('#backupBtn').addEventListener('click', ()=>{
+  const now = new Date(); const fn = '工作台备份_'+now.getFullYear()+pad(now.getMonth()+1)+pad(now.getDate())+'.json';
+  openModal(`
+    <h3>💾 数据备份</h3>
+    <p class="muted small" style="margin-bottom:14px">数据保存在本机浏览器中。建议每周导出一次备份，换电脑或清理浏览器前先导出。</p>
+    <div class="row wrap" style="gap:10px">
+      <button class="btn" id="bkExport">⬇ 导出备份文件</button>
+      <button class="btn ghost" id="bkImport">⬆ 导入备份文件</button>
+      <input type="file" id="bkFile" accept=".json" class="hide">
+    </div>
+    <div class="modal-foot"><button class="btn ghost" onclick="closeModal()">关闭</button></div>`);
+  $('#bkExport').onclick = ()=>{ const blob = new Blob([JSON.stringify(DB,null,2)], {type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fn; a.click(); toast('已导出备份文件'); };
+  $('#bkImport').onclick = ()=>$('#bkFile').click();
+  $('#bkFile').onchange = e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); if(!d || typeof d!=='object') throw 0; DB=Object.assign(defaults(), d, {settings:Object.assign({theme:'light'},d.settings||{})}); save(); applyTheme(DB.settings.theme); closeModal(); toast('✅ 备份导入成功'); switchView('dashboard'); }catch(err){ toast('❌ 文件格式不正确'); } }; r.readAsText(f); };
+});
+
+/* ================= 帮助 ================= */
+$('#helpBtn').addEventListener('click', ()=>{
+  openModal(`
+    <h3>❓ 使用说明</h3>
+    <div class="small" style="line-height:1.9">
+      <b>🖱 基本操作</b><br>
+      · 左侧导航切换 12 个功能模块，所有数据自动保存在本机浏览器<br>
+      · 点击左下角 💾 可导出 / 导入备份文件，换电脑不丢数据<br>
+      · 点击 🌓 切换浅色 / 深色主题<br><br>
+      <b>⏱ 时间追踪怎么用？</b><br>
+      · 点击 🎤 麦克风按钮后直接说，例如「写文案 一小时」「下午三点到四点 做瑜伽」<br>
+      · 也可以手动填「做什么 + 用了多久 + 开始时间」，点保存<br>
+      · 点「开始计时」记录正在做的事，做完再点一次自动结算时长<br><br>
+      <b>📝 每日十题</b><br>
+      · 每天自动生成 10 道不同题目（产品经理 / AI / 设计 / GitHub 开源项目 / 效率）<br>
+      · 每题点选答案后立即显示解析，做完全部自动记入成绩历史<br><br>
+      <b>🐙 GitHub 项目笔记</b><br>
+      · 在学习笔记里点「GitHub 项目笔记」，用模板记录开源项目的使用攻略<br>
+      · 看不懂代码没关系，把「安装步骤 / 报错 / 解决办法」记下来就是你的专属攻略<br><br>
+      <b>📱 手机访问</b><br>
+      · 本文件是单网页，可上传到任意静态托管（如 GitHub Pages）后手机打开<br>
+    </div>
+    <div class="modal-foot"><button class="btn ghost" onclick="closeModal()">我知道了</button></div>`);
+});
+
+/* ================= 共用渲染器注册表 ================= */
+const RENDER = {};
+/* =========================================================
+   ① 今日待办
+========================================================= */
+const TODO_CATS = { work:'工作', learn:'学习', life:'生活' };
+let todoFilter = 'all';
+function renderTodos(){
+  const list = DB.todos.slice().sort((a,b)=>(a.done-b.done)||(a.prio-b.prio)||(b.created-a.created));
+  const open = list.filter(t=>!t.done);
+  const todayDone = list.filter(t=>t.done && t.date===today());
+  const overdue = open.filter(t=>t.due && t.due<today());
+  $('#todoStats').innerHTML = `
+    <div class="stat-card"><div class="l">未完成</div><div class="v num">${open.length}</div><div class="e">共 ${list.length} 条</div></div>
+    <div class="stat-card"><div class="l">今日完成</div><div class="v num" style="color:var(--green)">${todayDone.length}</div><div class="e">${list.length?Math.round(todayDone.length/Math.max(list.length,1)*100):0}%</div></div>
+    <div class="stat-card"><div class="l">已逾期</div><div class="v num" style="color:${overdue.length?'var(--red)':'inherit'}">${overdue.length}</div><div class="e">${overdue.length?'记得尽快处理':'保持得很好'}</div></div>
+    <div class="stat-card"><div class="l">本周完成</div><div class="v num">${list.filter(t=>t.done&&t.date>=dstr(-6)).length}</div><div class="e">近 7 天</div></div>`;
+  let items = list;
+  if(todoFilter==='todo') items = items.filter(t=>!t.done);
+  else if(todoFilter==='done') items = items.filter(t=>t.done && t.date===today());
+  else if(todoFilter!=='all') items = items.filter(t=>t.cat===todoFilter);
+  if(!items.length){ $('#todoList').innerHTML = '<div class="empty"><span class="big">🎉</span>'+ (todoFilter==='done'?'今天还没有完成记录':'这里空空如也，添加一条待办吧') +'</div>'; return; }
+  $('#todoList').innerHTML = items.map(t=>{
+    const prioColor = t.prio===1?'var(--red)':t.prio===2?'var(--accent)':'var(--line)';
+    const dueTxt = t.due ? (t.due<today()&&!t.done?`<span class="tag red">逾期 ${t.due} ${weekdayCN(t.due)}</span>`:`<span class="tag gray">⏰ ${t.due}</span>`) : '';
+    return `<div class="todo-row ${t.done?'done':''}" data-id="${t.id}">
+      <div class="todo-prio" style="background:${prioColor}"></div>
+      <input type="checkbox" ${t.done?'checked':''} data-act="toggle">
+      <div class="todo-body">
+        <div class="t">${esc(t.text)}</div>
+        <div class="todo-meta"><span class="tag ${t.cat}">${TODO_CATS[t.cat]||t.cat}</span>${t.prio===1?'<span class="tag red">高优先级</span>':t.prio===2?'<span class="tag yellow">中优先级</span>':''}${dueTxt}<span class="muted">创建于 ${t.date}</span></div>
+      </div>
+      <div class="row">
+        <button class="btn ghost sm" data-act="edit" title="编辑">✏️</button>
+        <button class="btn ghost sm" data-act="del" title="删除">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+$('#todoFilter').addEventListener('click', e=>{ const c=e.target.closest('.chip'); if(!c) return; todoFilter=c.dataset.f; $$('#todoFilter .chip').forEach(x=>x.classList.toggle('on',x===c)); renderTodos(); });
+$('#todoList').addEventListener('click', e=>{
+  const row = e.target.closest('.todo-row'); if(!row) return;
+  const t = DB.todos.find(x=>x.id===row.dataset.id); if(!t) return;
+  const act = e.target.dataset.act;
+  if(act==='toggle'){ t.done=!t.done; save(); renderTodos(); updateBadges(); refreshDash(); }
+  if(act==='del'){ if(confirm('删除这条待办？')){ DB.todos=DB.todos.filter(x=>x.id!==t.id); save(); renderTodos(); updateBadges(); refreshDash(); } }
+  if(act==='edit') todoForm(t);
+});
+$('#todoAddBtn').addEventListener('click', ()=>todoForm());
+function todoForm(t){
+  openModal(`
+    <h3>${t?'✏️ 编辑待办':'＋ 添加待办'}</h3>
+    <div class="f"><label>内容</label><input id="tfText" value="${t?esc(t.text):''}" placeholder="要做什么？"></div>
+    <div class="row">
+      <div class="f flex1"><label>分类</label><select id="tfCat">${Object.keys(TODO_CATS).map(c=>`<option value="${c}" ${t&&t.cat===c?'selected':''}>${TODO_CATS[c]}</option>`).join('')}</select></div>
+      <div class="f flex1"><label>优先级</label><select id="tfPrio">${[['1','🔴 高'],['2','🟡 中'],['3','⚪ 低']].map(p=>`<option value="${p[0]}" ${t&&t.prio==+p[0]?'selected':''}>${p[1]}</option>`).join('')}</select></div>
+      <div class="f flex1"><label>截止日期(可空)</label><input type="date" id="tfDue" value="${t&&t.due?t.due:''}"></div>
+    </div>
+    <div class="modal-foot"><button class="btn ghost" onclick="closeModal()">取消</button><button class="btn" id="tfSave">保存</button></div>`);
+  $('#tfSave').onclick = ()=>{
+    const text=$('#tfText').value.trim(); if(!text){ toast('请填写内容'); return; }
+    const obj={ text, cat:$('#tfCat').value, prio:+$('#tfPrio').value, due:$('#tfDue').value||'' };
+    if(t){ Object.assign(t,obj); } else { DB.todos.unshift(Object.assign({id:uid(),done:false,date:today(),created:Date.now()},obj)); }
+    save(); closeModal(); renderTodos(); updateBadges(); refreshDash();
+  };
+}
+
+/* =========================================================
+   ② 番茄专注钟
+========================================================= */
+const POMO = { work:25*60, rest:5*60 };
+let pomoState='idle', pomoLeft=POMO.work, pomoTimer=null, pomoMode='work';
+function pomoDur(){ return pomoMode==='work'?POMO.work:POMO.rest; }
+function pomoRenderStatic(){
+  $('#pomoTime').textContent = pad(Math.floor(pomoLeft/60))+':'+pad(pomoLeft%60);
+  const total=pomoDur(); const off = Math.max(0, total-pomoLeft)/total*628.3;
+  const arc=$('#pomoArc'); arc.style.strokeDashoffset=off; arc.style.stroke = pomoMode==='work'?'var(--primary)':'var(--green)';
+  $('#pomoLabel').textContent = pomoMode==='work'?'🍅 工作时段':'🧘 休息时段';
+  $('#pomoLabel').style.color = pomoMode==='work'?'var(--primary)':'var(--green)';
+  $('#pomoState').textContent = pomoState==='run'?'专注中，别分心！':pomoState==='pause'?'已暂停':pomoState==='done'?'本段完成':'准备开始';
+  $('#pomoStart').textContent = pomoState==='run'?'⏸ 暂停':'▶ 开始';
+  $('#pomoStart').className = pomoState==='run'?'btn ghost':'btn green';
+  $('#pomoPause').disabled = !(pomoState==='run');
+  $('#pomoReset').disabled = (pomoState==='idle');
+}
+function pomoStatsToday(){
+  const c = DB.pomoDays||{}; return c[today()]||0;
+}
+function renderPomo(){
+  if(pomoState!=='run') pomoRenderStatic();
+  const c=DB.pomoDays||{};
+  $('#pomoStat').innerHTML = `
+    <div class="stat-card" style="box-shadow:none;background:var(--bg)"><div class="l">今日完成番茄</div><div class="v num" style="color:var(--primary)">${pomoStatsToday()}</div><div class="e">🍅 × ${pomoStatsToday()*25} 分钟专注</div></div>`;
+  let html='<div class="row between small muted" style="margin-bottom:6px">';
+  for(let i=6;i>=0;i--){ const d=dstr(-i); const n=c[d]||0; const w=weekdayCN(d); html+=`<div style="text-align:center"><div style="font-size:10px">${w}</div><div style="font-size:15px;margin:2px 0">${n?'🍅'.repeat(Math.min(n,3)):'·'}</div><div class="num">${n}</div></div>`; }
+  $('#pomoWeek').innerHTML = html+'</div>';
+  $('#pomoNote').textContent = pomoState==='run' ? (pomoMode==='work'?'专注中 · 完成后记一个番茄 🍅':'休息一下，喝口水 🥤') : '';
+}
+function pomoTick(){
+  pomoLeft--;
+  if(pomoLeft<=0){ pomoLeft=0; pomoRenderStatic();
+    if(pomoMode==='work'){
+      DB.pomoDays=DB.pomoDays||{}; DB.pomoDays[today()]=(DB.pomoDays[today()]||0)+1; save();
+      toast('🍅 完成一个番茄！休息 5 分钟吧');
+    } else { toast('☕ 休息结束，开始下一个番茄！'); }
+    pomoState='done'; clearInterval(pomoTimer); pomoTimer=null; pomoRenderStatic(); renderPomo(); refreshDash(); return;
+  }
+  pomoRenderStatic();
+}
+$('#pomoStart').addEventListener('click', ()=>{
+  if(pomoState==='run'){ clearInterval(pomoTimer); pomoTimer=null; pomoState='pause'; pomoRenderStatic(); return; }
+  if(pomoState==='done' || pomoState==='idle'){ pomoLeft=pomoDur(); }
+  pomoState='run'; pomoTimer=setInterval(pomoTick,1000); pomoRenderStatic();
+});
+$('#pomoPause').addEventListener('click', ()=>{ clearInterval(pomoTimer); pomoTimer=null; pomoState='pause'; pomoRenderStatic(); });
+$('#pomoReset').addEventListener('click', ()=>{ clearInterval(pomoTimer); pomoTimer=null; pomoState='idle'; pomoLeft=pomoDur(); pomoRenderStatic(); });
+document.querySelector('#view-pomo .pill-input').addEventListener('click', e=>{
+  const c=e.target.closest('.chip'); if(!c) return;
+  $$('#view-pomo .pill-input .chip').forEach(x=>x.classList.toggle('on',x===c));
+  const min=+c.dataset.min;
+  if(min<=15 && min>=5 && min<25){ pomoMode='rest'; POMO.rest=min*60; }
+  else { pomoMode='work'; POMO.work=min*60; }
+  pomoLeft=pomoDur(); if(pomoState!=='run'){ pomoState='idle'; } pomoRenderStatic();
+});
+
+/* =========================================================
+   ③ 灵感便签
+========================================================= */
+const NOTE_COLORS = { yellow:'#fdf3c9', pink:'#fde0e6', blue:'#dcebfd', green:'#dcf5e4', purple:'#e9e1fc' };
+function renderNotes(){
+  const kw=($('#noteSearch').value||'').trim().toLowerCase();
+  let list=DB.notes.slice().sort((a,b)=>(b.pin-a.pin)||(b.created-a.created));
+  if(kw) list=list.filter(n=>n.text.toLowerCase().includes(kw)||(n.tags||[]).some(t=>t.toLowerCase().includes(kw)));
+  if(!list.length){ $('#noteList').innerHTML='<div class="empty" style="grid-column:1/-1"><span class="big">💡</span>'+(kw?'没有匹配的便签':'灵感来了就记下来，别让它溜走')+'</div>'; return; }
+  $('#noteList').innerHTML=list.map(n=>`
+    <div class="note-card ${n.pin?'pin':''}" data-id="${n.id}" style="background:${NOTE_COLORS[n.color]||NOTE_COLORS.yellow}">
+      ${n.pin?'<div style="position:absolute;top:8px;right:10px;font-size:13px">📌</div>':''}
+      <div class="nt">${esc(n.text)}</div>
+      <div class="nb"><span>${(n.tags||[]).map(t=>'#'+esc(t)).join(' ')||' '}</span><span>${n.date||''}</span></div>
+    </div>`).join('');
+}
+$('#noteList').addEventListener('click', e=>{
+  const card=e.target.closest('.note-card'); if(!card) return;
+  noteForm(DB.notes.find(n=>n.id===card.dataset.id));
+});
+$('#noteAddBtn').addEventListener('click', ()=>noteForm());
+$('#noteSearch').addEventListener('input', renderNotes);
+$('#noteSearchClear').addEventListener('click', ()=>{ $('#noteSearch').value=''; renderNotes(); });
+function noteForm(n){
+  const colors=Object.keys(NOTE_COLORS);
+  openModal(`
+    <h3>${n?'✏️ 编辑便签':'💡 新便签'}</h3>
+    <div class="f"><label>内容</label><textarea id="nfText" rows="5" placeholder="写下你的灵感...">${n?esc(n.text):''}</textarea></div>
+    <div class="f"><label>标签（逗号分隔）</label><input id="nfTags" value="${n?(n.tags||[]).join(', '):''}" placeholder="例如：配色, 接稿"></div>
+    <div class="f"><label>颜色</label><div class="row" id="nfColors">${colors.map(c=>`<span class="note-color ${n&&n.color===c?'on':''}" data-c="${c}" style="background:${NOTE_COLORS[c]};width:22px;height:22px"></span>`).join('')}</div></div>
+    <div class="row"><label style="font-size:13px"><input type="checkbox" id="nfPin" ${n&&n.pin?'checked':''}> 置顶显示</label></div>
+    <div class="modal-foot"><button class="btn ghost" onclick="closeModal()">取消</button>${n?'<button class="btn danger ghost" id="nfDel">删除</button>':''}<button class="btn" id="nfSave">保存</button></div>`);
+  let picked=n?n.color:'yellow';
+  $('#nfColors').addEventListener('click', e=>{ const c=e.target.closest('.note-color'); if(!c) return; picked=c.dataset.c; $$('#nfColors .note-color').forEach(x=>x.classList.toggle('on',x===c)); });
+  const saveNote=()=>{ const text=$('#nfText').value.trim(); if(!text){ toast('便签内容不能为空'); return; } const tags=$('#nfTags').value.split(/[,，]/).map(s=>s.trim()).filter(Boolean);
+    if(n){ Object.assign(n,{text,tags,color:picked,pin:$('#nfPin').checked}); } else { DB.notes.unshift({id:uid(),text,tags,color:picked,pin:$('#nfPin').checked,date:today(),created:Date.now()}); }
+    save(); closeModal(); renderNotes(); refreshDash(); };
+  $('#nfSave').onclick=saveNote;
+  if(n){ $('#nfDel').onclick=()=>{ if(confirm('删除这张便签？')){ DB.notes=DB.notes.filter(x=>x.id!==n.id); save(); closeModal(); renderNotes(); refreshDash(); } }; }
+}
+
+/* =========================================================
+   ④ 素材收藏夹
+========================================================= */
+const BM_CATS = { color:['🎨','配色'], font:['🔤','字体'], illus:['🖼','插画参考'], layout:['📐','排版'], tut:['📖','教程'], tool:['🛠','工具'], other:['📦','其他'] };
+let bmFilter='all';
+function bmHost(url){ try{ return new URL(url).hostname.replace('www.',''); }catch(e){ return ''; } }
+function renderBm(){
+  let list=DB.bookmarks.slice().sort((a,b)=>b.created-a.created);
+  if(bmFilter!=='all') list=list.filter(b=>b.cat===bmFilter);
+  if(!list.length){ $('#bmList').innerHTML='<div class="empty" style="grid-column:1/-1"><span class="big">🔖</span>把散落各处的素材链接统一收进来</div>'; return; }
+  $('#bmList').innerHTML=list.map(b=>{ const [ic,cn]=BM_CATS[b.cat]||['📦','其他'];
+    return `<div class="card bm-card">
+      <div class="row between"><span class="tag blue">${ic} ${cn}</span><span class="muted small">${b.date}</span></div>
+      <b style="font-size:14px">${esc(b.title||bmHost(b.url)||'未命名素材')}</b>
+      <div class="url">${esc(b.url)}</div>
+      ${b.remark?`<div class="small" style="color:var(--sub)">${esc(b.remark)}</div>`:''}
+      <div class="bm-actions">
+        <a class="btn sm" href="${esc(b.url)}" target="_blank" rel="noopener">↗ 打开</a>
+        <button class="btn ghost sm" data-act="edit" data-id="${b.id}">✏️</button>
+        <button class="btn ghost sm" data-act="del" data-id="${b.id}">🗑</button>
+      </div>
+    </div>`; }).join('');
+}
+$('#bmFilter').addEventListener('click', e=>{ const c=e.target.closest('.chip'); if(!c) return; bmFilter=c.dataset.f; $$('#bmFilter .chip').forEach(x=>x.classList.toggle('on',x===c)); renderBm(); });
+$('#bmList').addEventListener('click', e=>{
+  const btn=e.target.closest('[data-act]'); if(!btn) return;
+  const b=DB.bookmarks.find(x=>x.id===btn.dataset.id); if(!b) return;
+  if(btn.dataset.act==='del'){ if(confirm('删除这条收藏？')){ DB.bookmarks=DB.bookmarks.filter(x=>x.id!==b.id); save(); renderBm(); } }
+  if(btn.dataset.act==='edit') bmForm(b);
+});
+$('#bmQuick').addEventListener('click', ()=>{
+  const url=$('#bmUrl').value.trim(); if(!url){ toast('请粘贴链接'); return; }
+  let u=url; if(!/^https?:\/\//i.test(u)) u='https://'+u;
+  const title=$('#bmTitle').value.trim();
+  DB.bookmarks.unshift({id:uid(),url:u,title,remark:'',cat:'other',date:today(),created:Date.now()});
+  save(); $('#bmUrl').value=''; $('#bmTitle').value=''; renderBm(); toast('✅ 已收藏');
+});
+$('#bmAddBtn').addEventListener('click', ()=>bmForm());
+function bmForm(b){
+  openModal(`
+    <h3>${b?'✏️ 编辑素材':'🔖 收藏素材'}</h3>
+    <div class="f"><label>链接</label><input id="bfUrl" value="${b?esc(b.url):''}" placeholder="https://..."></div>
+    <div class="f"><label>名称（可留空）</label><input id="bfTitle" value="${b?esc(b.title||''):''}" placeholder="素材名称"></div>
+    <div class="f"><label>分类</label><select id="bfCat">${Object.keys(BM_CATS).map(c=>`<option value="${c}" ${b&&b.cat===c?'selected':''}>${BM_CATS[c][0]} ${BM_CATS[c][1]}</option>`).join('')}</select></div>
+    <div class="f"><label>备注（为什么收藏？</label><textarea id="bfRemark" rows="3" placeholder="例如：渐变海报配色参考，客户可能喜欢">${b?esc(b.remark||''):''}</textarea></div>
+    <div class="modal-foot"><button class="btn ghost" onclick="closeModal()">取消</button><button class="btn" id="bfSave">保存</button></div>`);
+  $('#bfSave').onclick=()=>{
+    let url=$('#bfUrl').value.trim(); if(!url){ toast('请填写链接'); return; }
+    if(!/^https?:\/\//i.test(url)) url='https://'+url;
+    const obj={url,title:$('#bfTitle').value.trim(),cat:$('#bfCat').value,remark:$('#bfRemark').value.trim()};
+    if(b){ Object.assign(b,obj); } else { DB.bookmarks.unshift(Object.assign({id:uid(),date:today(),created:Date.now()},obj)); }
+    save(); closeModal(); renderBm();
+  };
+}
+/* =========================================================
+   ⑤ 接稿项目看板
+========================================================= */
+const PROJ_STAGES = [['lead','📥 待接洽'],['doing','🖌 进行中'],['review','📤 待交付'],['done','✅ 已完成']];
+function renderProjects(){
+  const doneMonth = DB.projects.filter(p=>p.doneDate && p.doneDate.slice(0,7)===today().slice(0,7)).reduce((s,p)=>s+(+p.amount||0),0);
+  const pending = DB.projects.filter(p=>p.stage!=='done').reduce((s,p)=>s+(+p.amount||0),0);
+  const overdue = DB.projects.filter(p=>p.stage!=='done' && p.deadline && p.deadline<today()).length;
+  $('#projStats').innerHTML=`
+    <div class="stat-card"><div class="l">本月收入</div><div class="v num" style="color:var(--green)">¥${doneMonth.toLocaleString()}</div><div class="e">已交付项目合计</div></div>
+    <div class="stat-card"><div class="l">进行中 / 待收款</div><div class="v num">${DB.projects.filter(p=>p.stage==='doing').length} 个</div><div class="e">¥${pending.toLocaleString()} 待收</div></div>
+    <div class="stat-card"><div class="l">已逾期</div><div class="v num" style="color:${overdue?'var(--red)':'inherit'}">${overdue}</div><div class="e">${overdue?'注意交付时间':'一切顺利'}</div></div>
+    <div class="stat-card"><div class="l">累计项目</div><div class="v num">${DB.projects.length}</div><div class="e">累计收入 ¥${DB.projects.filter(p=>p.stage==='done').reduce((s,p)=>s+(+p.amount||0),0).toLocaleString()}</div></div>`;
+  $('#kanban').innerHTML = PROJ_STAGES.map(([st,label])=>{
+    const cols=DB.projects.filter(p=>p.stage===st).sort((a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999'));
+    return `<div class="kan-col"><h4>${label}<span class="num muted">${cols.length}</span></h4>
+      ${cols.map(p=>{
+        const od = p.deadline && p.deadline<today() && st!=='done';
+        return `<div class="kan-card" data-id="${p.id}">
+          <b>${esc(p.name)}</b>
+          ${p.client?`<div class="km">👤 ${esc(p.client)}</div>`:''}
+          ${p.amount?`<div class="km amt">¥${(+p.amount).toLocaleString()}</div>`:''}
+          ${p.deadline?`<div class="km due ${od?'overdue':''}">⏰ ${p.deadline}${od?' · 已逾期!':''}</div>`:''}
+          ${p.note?`<div class="km">${esc(p.note)}</div>`:''}
+          <div class="row" style="margin-top:7px">
+            ${st!=='lead'?'<button class="btn ghost sm" data-act="mv" data-dir="-1">◀</button>':''}
+            ${st!=='done'?'<button class="btn ghost sm" data-act="mv" data-dir="1">▶</button>':''}
+            <button class="btn ghost sm" data-act="edit">✏️</button>
+            <button class="btn ghost sm" data-act="del">🗑</button>
+          </div>
+        </div>`; }).join('')||'<div class="empty" style="padding:16px">暂无</div>'}
+    </div>`;
+  }).join('');
+}
+$('#kanban').addEventListener('click', e=>{
+  const btn=e.target.closest('[data-act]'); if(!btn) return;
+  const card=e.target.closest('.kan-card'); if(!card) return;
+  const p=DB.projects.find(x=>x.id===card.dataset.id); if(!p) return;
+  const act=btn.dataset.act;
+  if(act==='del'){ if(confirm('删除项目「'+p.name+'」？')){ DB.projects=DB.projects.filter(x=>x.id!==p.id); save(); renderProjects(); refreshDash(); } }
+  if(act==='mv'){ const i=PROJ_STAGES.findIndex(s=>s[0]===p.stage); const ni=Math.min(Math.max(i+ +btn.dataset.dir,0),3); p.stage=PROJ_STAGES[ni][0]; if(p.stage==='done') p.doneDate=today(); else delete p.doneDate; save(); renderProjects(); refreshDash(); }
+  if(act==='edit') projForm(p);
+});
+$('#projAddBtn').addEventListener('click', ()=>projForm());
+function projForm(p){
+  openModal(`
+    <h3>${p?'✏️ 编辑项目':'📁 新项目'}</h3>
+    <div class="f"><label>项目名称</label><input id="pfName" value="${p?esc(p.name):''}" placeholder="例如：某品牌 VI 设计"></div>
+    <div class="row">
+      <div class="f flex1"><label>客户</label><input id="pfClient" value="${p?esc(p.client||''):''}" placeholder="客户 / 平台"></div>
+      <div class="f flex1"><label>金额 ¥</label><input id="pfAmount" type="number" min="0" value="${p?p.amount||'':''}" placeholder="0"></div>
+    </div>
+    <div class="row">
+      <div class="f flex1"><label>截止日期</label><input type="date" id="pfDeadline" value="${p&&p.deadline?p.deadline:''}"></div>
+      <div class="f flex1"><label>阶段</label><select id="pfStage">${PROJ_STAGES.map(([v,l])=>`<option value="${v}" ${p&&p.stage===v?'selected':''}>${l}</option>`).join('')}</select></div>
+    </div>
+    <div class="f"><label>进度备注</label><textarea id="pfNote" rows="3" placeholder="当前进展、待确认事项...">${p?esc(p.note||''):''}</textarea></div>
+    <div class="modal-foot"><button class="btn ghost" onclick="closeModal()">取消</button><button class="btn" id="pfSave">保存</button></div>`);
+  $('#pfSave').onclick=()=>{
+    const name=$('#pfName').value.trim(); if(!name){ toast('请填写项目名称'); return; }
+    const obj={name,client:$('#pfClient').value.trim(),amount:+$('#pfAmount').value||0,deadline:$('#pfDeadline').value||'',stage:$('#pfStage').value,note:$('#pfNote').value.trim()};
+    if(p){ Object.assign(p,obj); if(p.stage==='done') p.doneDate=today(); } else { DB.projects.unshift(Object.assign({id:uid(),created:Date.now()},obj,{stage:obj.stage||'lead'})); }
+    save(); closeModal(); renderProjects(); refreshDash();
+  };
+}
+
+/* =========================================================
+   ⑥ 视频笔记
+========================================================= */
+function renderVideos(){
+  const list=DB.videos.slice().sort((a,b)=>b.created-a.created);
+  if(!list.length){ $('#vidList').innerHTML='<div class="card"><div class="empty"><span class="big">🎬</span>看教程视频时，把要点和时间戳记在这里</div></div>'; return; }
+  $('#vidList').innerHTML=list.map(v=>`
+    <div class="vid-item">
+      <div class="row between wrap">
+        <b style="font-size:14.5px">${esc(v.title)}</b>
+        <div class="row"><button class="btn ghost sm" data-act="addmk" data-id="${v.id}">＋ 时间戳</button><button class="btn ghost sm" data-act="edit" data-id="${v.id}">✏️</button><button class="btn ghost sm" data-act="del" data-id="${v.id}">🗑</button></div>
+      </div>
+      ${v.url?`<div class="muted small" style="margin:4px 0">${esc(v.url)}</div>`:''}
+      ${v.summary?`<div class="small" style="margin:4px 0;color:var(--sub)">📝 ${esc(v.summary)}</div>`:''}
+      <div style="margin-top:8px">
+      ${(v.marks||[]).map(m=>`<div class="mk"><span class="tm" data-url="${esc(v.url)}" data-t="${m.t}">⏱ ${m.t}</span><span>${esc(m.note)}</span></div>`).join('')||'<div class="muted small">还没有时间戳笔记</div>'}
+      </div>
+    </div>`).join('');
+}
+$('#vidList').addEventListener('click', e=>{
+  const tm=e.target.closest('.tm');
+  if(tm){ const u=tm.dataset.url; if(u){ const t=tm.dataset.t.split(':').reduce((s,x)=>s*60+ +x,0); const sep=u.includes('youtu')?'&t=':'&t='; window.open(u+sep+t+'s','_blank'); } return; }
+  const btn=e.target.closest('[data-act]'); if(!btn) return;
+  const v=DB.videos.find(x=>x.id===btn.dataset.id); if(!v) return;
+  if(btn.dataset.act==='del'){ if(confirm('删除这条视频笔记？')){ DB.videos=DB.videos.filter(x=>x.id!==v.id); save(); renderVideos(); } }
+  if(btn.dataset.act==='edit') vidForm(v);
+  if(btn.dataset.act==='addmk'){ vidForm(v,true); }
+});
+$('#vidAddBtn').addEventListener('click', ()=>vidForm());
+function vidForm(v, focusMk){
+  openModal(`
+    <h3>${v?'✏️ 视频笔记':'🎬 新建视频笔记'}</h3>
+    <div class="f"><label>标题</label><input id="vfTitle" value="${v?esc(v.title):''}" placeholder="视频标题 / 主题"></div>
+    <div class="f"><label>链接（B站 / YouTube / 其他）</label><input id="vfUrl" value="${v?esc(v.url||''):''}" placeholder="https://"></div>
+    <div class="f"><label>摘要 / 收获</label><textarea id="vfSummary" rows="3" placeholder="这期视频讲什么？你的收获？">${v?esc(v.summary||''):''}</textarea></div>
+    ${v?`<div class="f"><label>时间戳笔记</label><div id="vfMarks">${(v.marks||[]).map((m,i)=>`<div class="row" style="margin-bottom:6px"><input style="width:82px" placeholder="12:34" value="${esc(m.t)}" data-k="t${i}"><input class="flex1" placeholder="这个时间讲了什么" value="${esc(m.note)}" data-k="n${i}"><button type="button" class="del-x" data-del="${i}">✕</button></div>`).join('')}</div><button class="btn ghost sm" id="vfAddMk">＋ 添加时间戳</button></div>`:''}
+    <div class="modal-foot"><button class="btn ghost" onclick="closeModal()">取消</button><button class="btn" id="vfSave">保存</button></div>`);
+  let mkCount = v?(v.marks||[]).length:0;
+  const addMkRow=(t='',n='')=>{ const d=document.createElement('div'); d.className='row'; d.style.marginBottom='6px'; d.innerHTML=`<input style="width:82px" placeholder="12:34" value="${esc(t)}" data-k="t${mkCount}"><input class="flex1" placeholder="这个时间讲了什么" value="${esc(n)}" data-k="n${mkCount}"><button type="button" class="del-x" data-del="${mkCount}">✕</button>`; $('#vfMarks').appendChild(d); mkCount++; d.querySelector('.del-x').onclick=()=>d.remove(); };
+  if(focusMk && v) addMkRow();
+  const mkAdd=$('#vfAddMk'); if(mkAdd) mkAdd.onclick=()=>addMkRow();
+  const vfMarks=$('#vfMarks'); if(vfMarks) vfMarks.addEventListener('click', e=>{ const d=e.target.closest('[data-del]'); if(d) d.closest('.row').remove(); });
+  $('#vfSave').onclick=()=>{
+    const title=$('#vfTitle').value.trim(); if(!title){ toast('请填写标题'); return; }
+    const marks=[]; $$('#vfMarks [data-k^="t"]').forEach(inp=>{ const n=inp.closest('.row').querySelector('[data-k^="n"]'); const t=inp.value.trim(); const nt=(n&&n.value.trim())||''; if(t||nt) marks.push({t:t||'00:00',note:nt}); });
+    const obj={title,url:$('#vfUrl').value.trim(),summary:$('#vfSummary').value.trim(),marks};
+    if(v){ Object.assign(v,obj); } else { DB.videos.unshift(Object.assign({id:uid(),created:Date.now()},obj)); }
+    save(); closeModal(); renderVideos();
+  };
+}
+
+/* =========================================================
+   ⑦ 习惯打卡
+========================================================= */
+function ensureHabits(){
+  if(!DB.habits.length) DB.habits.push({id:uid(),name:'瑜伽',icon:'🧘',time:'07:40 - 08:40',records:{},created:Date.now()});
+}
+function renderHabits(){
+  ensureHabits();
+  const t=today();
+  $('#habitList').innerHTML = DB.habits.map(h=>{
+    const done=!!h.records[t];
+    let streak=0; const d=new Date();
+    while(true){ const k=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); if(h.records[k]){streak++; d.setDate(d.getDate()-1);} else break; }
+    h._streak=streak;
+    return `<div class="habit-row ${done?'done':''}" data-id="${h.id}">
+      <div class="habit-ic">${h.icon||'✅'}</div>
+      <div class="flex1"><b class="hab-n">${esc(h.name)}</b>
+        <div class="habit-streak">${h.time?esc(h.time)+' · ':''}🔥 连续 ${streak} 天${h.records[t]?' · 今日已打卡 ✅':''}</div></div>
+      <button class="check-btn" data-act="check" title="今日打卡">✓</button>
+      <button class="btn ghost sm" data-act="edit" title="编辑">✏️</button>
+      <button class="btn ghost sm" data-act="del" title="删除">🗑</button>
+    </div>`;
+  }).join('')||'<div class="empty">还没有习惯</div>';
+  /* 日历：当月每天，显示当天完成习惯数 */
+  const now=new Date(); const y=now.getFullYear(), m=now.getMonth();
+  const first=new Date(y,m,1).getDay(); const days=new Date(y,m+1,0).getDate();
+  let cal='<div class="cal">';
+  ['日','一','二','三','四','五','六'].forEach(d=>cal+=`<div class="day" style="font-weight:700">${d}</div>`);
+  for(let i=0;i<first;i++) cal+='<div class="day"></div>';
+  for(let d=1;d<=days;d++){ const k=y+'-'+pad(m+1)+'-'+pad(d); const n=DB.habits.filter(h=>h.records[k]).length; const isT=k===t;
+    cal+=`<div class="day ${n? (n===DB.habits.length?'on':'on'):''} ${isT?'today':''}" title="${k}">${d}${n?`<span style="font-size:9px">✓${n}</span>`:''}</div>`; }
+  $('#habitCal').innerHTML = cal+'</div><div class="muted small" style="margin-top:8px">✓ 数字 = 当天完成的习惯数，今天用蓝框标出</div>';
+}
+$('#habitList').addEventListener('click', e=>{
+  const btn=e.target.closest('[data-act]'); if(!btn) return;
+  const row=e.target.closest('.habit-row'); const h=DB.habits.find(x=>x.id===row.dataset.id); if(!h) return;
+  if(btn.dataset.act==='check'){ const t=today(); h.records[t]=!h.records[t]; save(); renderHabits(); refreshDash(); }
+  if(btn.dataset.act==='del'){ if(confirm('删除习惯「'+h.name+'」？历史记录会保留在数据中。')){ DB.habits=DB.habits.filter(x=>x.id!==h.id); save(); renderHabits(); refreshDash(); } }
+  if(btn.dataset.act==='edit') habitForm(h);
+});
+$('#habitAddBtn').addEventListener('click', ()=>habitForm());
+function habitForm(h){
+  openModal(`
+    <h3>${h?'✏️ 编辑习惯':'＋ 添加习惯'}</h3>
+    <div class="f"><label>习惯名称</label><input id="hfName" value="${h?esc(h.name):''}" placeholder="例如：瑜伽 / 阅读 30 分钟"></div>
+    <div class="row">
+      <div class="f flex1"><label>图标（emoji）</label><input id="hfIcon" value="${h?esc(h.icon||''):'✅'}" placeholder="🧘"></div>
+      <div class="f flex1"><label>时间（可空）</label><input id="hfTime" value="${h?esc(h.time||''):''}" placeholder="如 07:40 - 08:40"></div>
+    </div>
+    <div class="modal-foot"><button class="btn ghost" onclick="closeModal()">取消</button><button class="btn" id="hfSave">保存</button></div>`);
+  $('#hfSave').onclick=()=>{
+    const name=$('#hfName').value.trim(); if(!name){ toast('请填写名称'); return; }
+    const obj={name,icon:$('#hfIcon').value.trim()||'✅',time:$('#hfTime').value.trim()};
+    if(h){ Object.assign(h,obj); } else { DB.habits.push(Object.assign({id:uid(),records:{},created:Date.now()},obj)); }
+    save(); closeModal(); renderHabits(); refreshDash();
+  };
+}
+
+/* =========================================================
+   ⑧ 创业点子库
+========================================================= */
+const IDEA_ST = { new:['🆕','新点子'], doing:['🚧','在推进'], drop:['🗃','搁置'] };
+function renderIdeas(){
+  const list=DB.ideas.slice().sort((a,b)=>b.score-a.score);
+  if(!list.length){ $('#ideaList').innerHTML='<div class="card"><div class="empty"><span class="big">🚀</span>脑子里闪过的创业想法，先记下来再说</div></div>'; return; }
+  $('#ideaList').innerHTML=list.map(i=>{ const [ic,cn]=IDEA_ST[i.status]||IDEA_ST.new;
+    const stars=n=>'★'.repeat(n)+'☆'.repeat(5-n);
+    return `<div class="idea-card">
+      <div class="row between wrap"><b style="font-size:14.5px">${esc(i.title)}</b><span class="tag gray">${ic} ${cn}</span></div>
+      ${i.desc?`<div class="small muted" style="margin:5px 0">${esc(i.desc)}</div>`:''}
+      <div class="idea-score">
+        <span class="score-chip" title="可行性">✅ 可行 <span class="stars">${stars(i.feas)}</span></span>
+        <span class="score-chip" title="兴趣度">❤️ 兴趣 <span class="stars">${stars(i.inter)}</span></span>
+        <span class="score-chip" title="投入成本(越低越好)">💰 成本 <span class="stars">${stars(i.cost)}</span></span>
+        <span class="score-chip" style="background:var(--primary-soft);color:var(--primary);font-weight:700">综合分 ${i.score}</span>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn ghost sm" data-act="edit">✏️ 评估/编辑</button>
+        <button class="btn ghost sm" data-act="del">🗑</button>
+      </div>
+    </div>`; }).join('');
+}
+$('#ideaList').addEventListener('click', e=>{
+  const btn=e.target.closest('[data-act]'); if(!btn) return;
+  const card=e.target.closest('.idea-card'); if(!card) return;
+  const idx=$$('#ideaList .idea-card').indexOf(card); const ideas=DB.ideas.slice().sort((a,b)=>b.score-a.score); const i=ideas[idx]; if(!i) return;
+  if(btn.dataset.act==='del'){ if(confirm('删除这个点子？')){ DB.ideas=DB.ideas.filter(x=>x.id!==i.id); save(); renderIdeas(); } }
+  if(btn.dataset.act==='edit') ideaForm(i);
+});
+$('#ideaAddBtn').addEventListener('click', ()=>ideaForm());
+function ideaForm(i){
+  const stSel=['new','doing','drop'].map(s=>`<option value="${s}" ${i&&i.status===s?'selected':''}>${IDEA_ST[s][1]}</option>`).join('');
+  openModal(`
+    <h3>${i?'✏️ 评估点子':'🚀 记录点子'}</h3>
+    <div class="f"><label>点子名称</label><input id="ifTitle" value="${i?esc(i.title):''}" placeholder="例如：为小商家做小红书封面模板包"></div>
+    <div class="f"><label>描述</label><textarea id="ifDesc" rows="3" placeholder="想法细节、目标用户、怎么赚钱...">${i?esc(i.desc||''):''}</textarea></div>
+    <div class="row wrap">
+      <div class="f flex1"><label>可行性（1-5）</label><input id="ifFeas" type="range" min="1" max="5" value="${i?i.feas:3}" style="width:100%"></div>
+      <div class="f flex1"><label>兴趣度（1-5）</label><input id="ifInter" type="range" min="1" max="5" value="${i?i.inter:3}" style="width:100%"></div>
+      <div class="f flex1"><label>投入成本（1=极低 5=极高）</label><input id="ifCost" type="range" min="1" max="5" value="${i?i.cost:3}" style="width:100%"></div>
+    </div>
+    <div class="f"><label>状态</label><select id="ifStatus">${stSel}</select></div>
+    <div class="muted small">💡 综合分 = 可行性 + 兴趣度 − 投入成本，分越高越值得深挖。</div>
+    <div class="modal-foot"><button class="btn ghost" onclick="closeModal()">取消</button><button class="btn" id="ifSave">保存</button></div>`);
+  $('#ifSave').onclick=()=>{
+    const title=$('#ifTitle').value.trim(); if(!title){ toast('请填写点子名称'); return; }
+    const obj={title,desc:$('#ifDesc').value.trim(),feas:+$('#ifFeas').value,inter:+$('#ifInter').value,cost:+$('#ifCost').value,status:$('#ifStatus').value,score:+$('#ifFeas').value + +$('#ifInter').value - +$('#ifCost').value};
+    if(i){ Object.assign(i,obj); } else { DB.ideas.unshift(Object.assign({id:uid(),created:Date.now()},obj)); }
+    save(); closeModal(); renderIdeas();
+  };
+}
+/* =========================================================
+   ⑨ 学习笔记（含 GitHub 开源项目使用模板）
+========================================================= */
+const LEARN_CATS = { pm:['📊','产品经理'], ai:['🤖','AI 研究'], github:['🐙','GitHub 项目'], design:['🎨','设计'], other:['📦','其他'] };
+let learnFilter='all';
+function renderLearn(){
+  const kw=($('#learnSearch').value||'').trim().toLowerCase();
+  let list=DB.learn.slice().sort((a,b)=>b.created-a.created);
+  if(learnFilter!=='all') list=list.filter(n=>n.cat===learnFilter);
+  if(kw) list=list.filter(n=>(n.title+' '+(n.content||'')+' '+(n.tags||[]).join(' ')).toLowerCase().includes(kw));
+  if(!list.length){ $('#learnList').innerHTML='<div class="card" style="grid-column:1/-1"><div class="empty"><span class="big">📚</span>'+(kw?'没有匹配的笔记':'点击右上角「新建笔记」开始记录，或试试「GitHub 项目笔记」模板')+'</div></div>'; return; }
+  $('#learnList').innerHTML=list.map(n=>{
+    const [ic,cn]=LEARN_CATS[n.cat]||LEARN_CATS.other;
+    const gh = n.gh || {};
+    let extra='';
+    if(n.cat==='github'){ extra=`<div class="small muted" style="margin-top:6px">${gh.url?'🔗 '+esc(gh.url):''}${gh.use?'<br>🎯 '+esc(gh.use):''}</div>`; }
+    return `<div class="learn-card" data-id="${n.id}">
+      <div class="row between"><span class="tag blue">${ic} ${cn}</span><span class="muted small">${n.date}</span></div>
+      <b style="display:block;margin-top:6px;font-size:14.5px">${esc(n.title)}</b>
+      <div class="lc">${esc(gh.use||n.content||'')}</div>
+      <div class="row" style="margin-top:8px;gap:6px"><button class="btn ghost sm" data-act="edit">✏️ 查看/编辑</button><button class="btn ghost sm" data-act="del">🗑</button></div>
+    </div>`; }).join('');
+}
+$('#learnSearch').addEventListener('input', renderLearn);
+$('#learnFilter').addEventListener('click', e=>{ const c=e.target.closest('.chip'); if(!c) return; learnFilter=c.dataset.f; $$('#learnFilter .chip').forEach(x=>x.classList.toggle('on',x===c)); renderLearn(); });
+$('#learnList').addEventListener('click', e=>{
+  const btn=e.target.closest('[data-act]'); if(!btn) return;
+  const card=e.target.closest('.learn-card'); const n=DB.learn.find(x=>x.id===card.dataset.id); if(!n) return;
+  if(btn.dataset.act==='del'){ if(confirm('删除这篇笔记？')){ DB.learn=DB.learn.filter(x=>x.id!==n.id); save(); renderLearn(); } }
+  if(btn.dataset.act==='edit') learnForm(n);
+});
+$('#learnAddBtn').addEventListener('click', ()=>learnForm());
+$('#learnGhBtn').addEventListener('click', ()=>learnForm(null,'github'));
+function learnForm(n, presetCat){
+  const cat = n?n.cat:(presetCat||'pm');
+  const isGh = cat==='github';
+  const gh = (n&&n.gh)||{};
+  openModal(`
+    <h3>${isGh?'🐙 GitHub 项目使用笔记':'📚 '+(n?'编辑笔记':'新建笔记')}</h3>
+    <div class="f"><label>标题</label><input id="lfTitle" value="${n?esc(n.title):''}" placeholder="${isGh?'例如：用 Nano Banana 本地生成图片':'笔记标题'}"></div>
+    <div class="f"><label>分类</label><select id="lfCat">${Object.keys(LEARN_CATS).map(c=>`<option value="${c}" ${cat===c?'selected':''}>${LEARN_CATS[c][0]} ${LEARN_CATS[c][1]}</option>`).join('')}</select></div>
+    ${isGh?`
+      <div class="f"><label>GitHub 链接</label><input id="ghUrl" value="${esc(gh.url||'')}" placeholder="https://github.com/作者/项目"></div>
+      <div class="row"><div class="f flex1"><label>这个项目是干嘛的？</label><input id="ghUse" value="${esc(gh.use||'')}" placeholder="一句话用途"></div><div class="f flex1"><label>Star 数</label><input id="ghStar" value="${esc(gh.star||'')}" placeholder="如 12.3k"></div></div>
+      <div class="f"><label>📥 安装 / 运行步骤（照抄命令就行）</label><textarea id="ghInstall" rows="3" placeholder="npm install ...&#10;npm run dev">${esc(gh.install||'')}</textarea></div>
+      <div class="f"><label>🤔 看不懂的地方</label><textarea id="ghConfuse" rows="2" placeholder="哪个命令、哪个文件看不懂？">${esc(gh.confuse||'')}</textarea></div>
+      <div class="f"><label>💡 解决办法 / 报错记录</label><textarea id="ghFix" rows="2" placeholder="报什么错？怎么解决的？">${esc(gh.fix||'')}</textarea></div>
+      <div class="f"><label>⭐ 常用命令 / 技巧</label><textarea id="ghTips" rows="2" placeholder="每次都要用的命令记这里">${esc(gh.tips||'')}</textarea></div>
+      <div class="muted small">💡 不懂代码也能用好开源项目：优先找 Release 打包文件或在线 Demo，命令照抄记录，报错就搜「错误信息 + 项目名」。</div>`
+    :`<div class="f"><label>内容</label><textarea id="lfContent" rows="7" placeholder="记录你的学习心得...">${n?esc(n.content||''):''}</textarea></div>`}
+    <div class="f"><label>标签（逗号分隔）</label><input id="lfTags" value="${n?(n.tags||[]).join(', '):''}" placeholder="例如：AI绘图, 部署"></div>
+    <div class="modal-foot"><button class="btn ghost" onclick="closeModal()">取消</button><button class="btn" id="lfSave">保存</button></div>`);
+  $('#lfCat').onchange = ()=>learnForm(n, $('#lfCat').value);
+  $('#lfSave').onclick=()=>{
+    const title=$('#lfTitle').value.trim(); if(!title){ toast('请填写标题'); return; }
+    const c=$('#lfCat').value;
+    const obj={title,cat:c,tags:$('#lfTags').value.split(/[,，]/).map(s=>s.trim()).filter(Boolean)};
+    if(c==='github'){ obj.gh={url:$('#ghUrl').value.trim(),use:$('#ghUse').value.trim(),star:$('#ghStar').value.trim(),install:$('#ghInstall').value,confuse:$('#ghConfuse').value,fix:$('#ghFix').value,tips:$('#ghTips').value}; obj.content=($('#ghUse').value.trim()||'')+' ｜ 安装:'+($('#ghInstall').value.trim().slice(0,40)||'无')+' ｜ 报错:'+($('#ghFix').value.trim().slice(0,60)||'无'); }
+    else { obj.content=$('#lfContent').value.trim(); }
+    if(n){ Object.assign(n,obj); } else { DB.learn.unshift(Object.assign({id:uid(),date:today(),created:Date.now()},obj)); }
+    save(); closeModal(); renderLearn();
+  };
+}
+
+/* =========================================================
+   ⑩ 每日十题（题库 + 答题）
+========================================================= */
+const QUIZ_BANK = [
+/* ---------- 产品经理 ---------- */
+{t:'pm', q:'MVP（最小可行产品）的核心思想是？', opts:['一次把所有功能做完再上线','用最小的成本验证核心假设，尽快获得反馈','只做给投资人看的演示产品','产品上线后完全不迭代'], ans:1, ex:'MVP 强调用最少功能快速上线，通过真实用户反馈验证需求，再持续迭代。'},
+{t:'pm', q:'北极星指标（North Star Metric）通常指？', opts:['营收最高的一项指标','唯一能衡量产品成功的指标','能代表用户核心价值、指引全局的指标','老板最关注的指标'], ans:2, ex:'北极星指标是能反映产品带给用户核心价值的指标，如 Airbnb 的「预订过夜数」。'},
+{t:'pm', q:'用户故事（User Story）的标准格式是？', opts:['作为[角色]，我想要[功能]，以便[价值]','需求文档编号','一句话描述 Bug','产品经理的工作计划'], ans:0, ex:'用户故事从用户视角出发：作为谁 → 要什么 → 为什么，强调价值而非实现细节。'},
+{t:'pm', q:'AARRR 漏斗模型（海盗指标）不包括？', opts:['获取 Acquisition','激活 Activation','留存 Retention','融资 Funding'], ans:3, ex:'AARRR = 获取、激活、留存、收入（Revenue）、推荐（Referral），是增长分析的基本框架。'},
+{t:'pm', q:'RICE 优先级模型中的四个维度是？', opts:['Reach 触达 / Impact 影响 / Confidence 信心 / Effort 成本','需求/交互/成本/体验','收入/利润/客户/效率','资源/实施/检查/评估'], ans:0, ex:'RICE 通过触达人数、影响程度、信心指数、投入成本四维打分，帮助产品经理排序需求。'},
+{t:'pm', q:'PMF（Product-Market Fit）指？', opts:['产品通过测试上线','产品与市场需求的匹配程度','融资到位','产品获得设计奖'], ans:1, ex:'PMF 即产品市场契合：产品真正满足了一群人的强烈需求，典型信号是用户自发推荐、留存高。'},
+{t:'pm', q:'KANO 模型中「兴奋型需求」的特征是？', opts:['不做用户会很不满','做了用户满意度大幅提升，不做也不扣分','用户不会注意到','必须花钱才能获得'], ans:1, ex:'兴奋型需求是惊喜点：提供时让用户惊艳，不提供也不会有明显不满，常见于差异化竞争。'},
+{t:'pm', q:'产品埋点（Event Tracking）的主要目的是？', opts:['给程序员增加工作量','记录用户行为数据用于分析优化','防止用户作弊','美化后台界面'], ans:1, ex:'埋点采集用户行为（点击、浏览、转化）数据，是产品决策和优化的数据基础。'},
+{t:'pm', q:'Scrum 敏捷开发中「冲刺（Sprint）」通常持续？', opts:['1-4 周','6 个月','1 年','不确定'], ans:0, ex:'Sprint 是敏捷迭代的单位，常用 2 周左右，每轮结束交付可用的增量并复盘。'},
+{t:'pm', q:'竞品分析的核心目的是？', opts:['抄袭竞品所有功能','了解市场格局，找到差异化机会','贬低竞争对手','收集竞品用户隐私'], ans:1, ex:'竞品分析是为了理解市场与对手策略，找到自己的差异化定位和机会点。'},
+{t:'pm', q:'「留存率」最准确的定义是？', opts:['新用户数量','一段时间后仍继续使用产品的用户比例','用户付费金额','App 下载量'], ans:1, ex:'留存率衡量用户粘性，如次日留存、7 日留存，是产品健康度的重要指标。'},
+{t:'pm', q:'AB 测试的正确做法是？', opts:['直接替换线上版本看效果','控制单一变量，随机分组对比','让所有人用新版本','根据感觉判断好坏'], ans:1, ex:'AB 测试要求随机分组、单一变量，用数据对比两个方案的效果差异。'},
+{t:'pm', q:'产品路线图（Roadmap）的作用是？', opts:['记录已完成的工作','对齐各方对产品未来方向的预期','给研发排期','替代需求文档'], ans:1, ex:'Roadmap 展示产品未来版本规划与节奏，用于内部对齐和外部沟通预期。'},
+{t:'pm', q:'用户画像（Persona）描述的是？', opts:['单个真实用户','有代表性的虚拟用户角色及其特征','所有用户的数据均值','用户头像'], ans:1, ex:'用户画像是由调研数据提炼出的虚拟典型用户，包含目标、痛点、行为习惯等。'},
+{t:'pm', q:'商业画布（Business Model Canvas）中不包含的模块是？', opts:['价值主张','客户细分','代码仓库','收入来源'], ans:2, ex:'商业画布 9 大模块：客户细分、价值主张、渠道、客户关系、收入来源、关键资源、关键活动、关键伙伴、成本结构。'},
+{t:'pm', q:'需求优先级排序时，最应优先处理的是？', opts:['开发最容易的','用户呼声最高且战略价值大的','老板随口提的','测试发现的所有 Bug'], ans:1, ex:'优先级要综合价值与成本：高频、强需求、高战略价值、低成本的需求优先。'},
+{t:'pm', q:'尼尔森十大可用性原则中「系统状态可见性」指？', opts:['界面要美观','系统要让用户随时知道当前发生了什么（如加载中）','所有功能都可见','错误要隐藏'], ans:1, ex:'例如页面加载要有进度提示，操作后要有反馈，用户才不会迷失。'},
+{t:'pm', q:'SWOT 分析中的 O 代表？', opts:['优势','劣势','机会','威胁'], ans:2, ex:'SWOT = Strengths 优势、Weaknesses 劣势、Opportunities 机会、Threats 威胁。'},
+{t:'pm', q:'数据分析中「转化率」的计算方式是？', opts:['完成目标行为的用户数 ÷ 进入该流程的用户数','总用户数 ÷ 付费用户','点击次数 × 展示次数','页面数量'], ans:0, ex:'转化率衡量每一步漏斗的完成比例，如注册转化率、下单转化率。'},
+{t:'pm', q:'产品经理的核心职责是？', opts:['写代码','发现并定义有价值的问题，推动解决方案落地','设计页面','运营社群'], ans:1, ex:'PM 的本质是「发现问题 → 定义需求 → 组织资源 → 交付价值」，是产品的第一负责人。'},
+
+/* ---------- AI ---------- */
+{t:'ai', q:'大语言模型（LLM）的「幻觉（Hallucination）」指？', opts:['模型计算错误','模型一本正经地编造不存在的事实','模型无法联网','模型回答太慢'], ans:1, ex:'幻觉指 AI 生成看似合理但实际错误或虚构的内容，重要信息需交叉验证。'},
+{t:'ai', q:'提示词（Prompt）工程中「角色设定」的示例是？', opts:['给模型加权限','「你是一位资深平面设计师，请...」','让模型自动升级','输入更长的文本'], ans:1, ex:'先给 AI 设定专业角色，能让回答更聚焦、更专业，是提示词的基础技巧。'},
+{t:'ai', q:'「上下文窗口（Context Window）」指？', opts:['浏览器窗口大小','模型一次能处理的最大输入输出长度','电脑内存','显卡显存'], ans:1, ex:'上下文窗口越大，AI 能"记住"的对话与资料越多，长文档分析就越稳。'},
+{t:'ai', q:'RAG（检索增强生成）解决的核心问题是？', opts:['模型太贵','让模型基于私有/最新知识回答，减少幻觉','让模型跑得更快','让模型会画画'], ans:1, ex:'RAG 先把相关资料检索出来再让模型回答，适合企业知识库、私域问答。'},
+{t:'ai', q:'以下哪个不是主流大语言模型？', opts:['GPT-4','Claude','DeepSeek','Photoshop'], ans:3, ex:'GPT（OpenAI）、Claude（Anthropic）、DeepSeek（深度求索）都是主流大模型，Photoshop 是设计软件。'},
+{t:'ai', q:'「少样本提示（Few-shot）」的含义是？', opts:['让 AI 只回答一次','在提示词里给几个输入输出示例引导 AI','限制 AI 的回答字数','只让 AI 看图片'], ans:1, ex:'给出 2-3 个示例，AI 就能模仿示例的风格与格式，比只说要求更稳定。'},
+{t:'ai', q:'Stable Diffusion 与 Midjourney 的共同点是？', opts:['都是视频编辑软件','都能根据文本生成图像','都是代码托管平台','都是数据库'], ans:1, ex:'它们都是 AI 图像生成工具：Midjourney 在 Discord 使用，Stable Diffusion 可本地部署。'},
+{t:'ai', q:'AI Agent（智能体）与传统聊天机器人的主要区别是？', opts:['更便宜','能自主规划并调用工具完成多步任务','只能聊天','需要安装插件'], ans:1, ex:'Agent 能拆解目标、调用工具（搜索/代码/API）、自主执行多步任务，如自动写文案并发布。'},
+{t:'ai', q:'调用大模型 API 通常按什么计费？', opts:['按次计费固定价格','按 Token（输入输出字数）计费','按电脑使用时长','完全免费'], ans:1, ex:'Token 是模型处理文本的最小单位，费用 = 输入 Token 数 + 输出 Token 数 × 单价。'},
+{t:'ai', q:'本地部署大模型（如 Llama）最关键的硬件是？', opts:['声卡','显卡（GPU，显存越大越好）','机械硬盘','路由器'], ans:1, ex:'大模型推理需要大量并行计算，主要靠 GPU 与显存；显存不足会报 OOM 错误。'},
+{t:'ai', q:'嵌入（Embedding）技术主要用于？', opts:['把文字变成数值向量，便于语义搜索和相似度计算','压缩视频','生成动画','加密文件'], ans:0, ex:'Embedding 把语义映射为向量，语义相近的文本向量距离近，是 RAG 和 AI 搜索的基础。'},
+{t:'ai', q:'提示词注入（Prompt Injection）是指？', opts:['提示词写得太长','恶意输入试图操控 AI 执行非预期指令','AI 拒绝回答问题','网络攻击网站'], ans:1, ex:'如让 AI 忽略系统指令、泄露提示词或执行危险操作，使用 AI 处理不可信内容时需防范。'},
+{t:'ai', q:'以下哪个是 AI 工作流自动化工具？', opts:['Excel','n8n / Coze（扣子）','微信','百度网盘'], ans:1, ex:'n8n、Coze 等工具可把 AI 与多个应用串成自动化工作流，无需写代码。'},
+{t:'ai', q:'「提示词工程」中的「链式思考（Chain-of-Thought）」是？', opts:['让 AI 分步骤推理，输出思考过程提高准确率','让 AI 跳舞','让 AI 联网','让 AI 换一种语言'], ans:0, ex:'如让模型"一步步思考再给答案"，复杂问题的正确率会明显提升。'},
+{t:'ai', q:'AI 绘画中「负面提示词（Negative Prompt）」的作用是？', opts:['让画面更暗','排除不想要的内容，如"模糊、多余手指"','让图片变小','降低清晰度'], ans:1, ex:'负面提示词告诉模型不要生成什么，是稳定出图质量的关键技巧。'},
+{t:'ai', q:'Sora、可灵（Kling）属于哪类 AI 工具？', opts:['文本生成','图像生成','视频生成','音乐生成'], ans:2, ex:'Sora（OpenAI）和可灵（快手）都能根据文字/图片生成视频。'},
+{t:'ai', q:'用 AI 做设计时，「迭代式提示词」指的是？', opts:['一次生成直接定稿','根据生成结果不断修改补充提示词逼近目标','重复生成 100 张','随机生成'], ans:1, ex:'先粗后细：第一版给大致描述，看结果后逐步加细节、改风格，效率远高于一次到位。'},
+{t:'ai', q:'「AI 搜索」相比传统搜索的典型优势是？', opts:['结果更多','能直接综合多来源给出带依据的答案','不需要网络','结果全部正确'], ans:1, ex:'AI 搜索会综合信息并直接作答、附来源，但仍有幻觉风险，重要信息建议核对原文。'},
+{t:'ai', q:'训练大模型时「微调（Fine-tuning）」的目的是？', opts:['让模型学会特定领域的数据与风格','加快电脑速度','清理硬盘','压缩模型体积的唯一方式'], ans:0, ex:'微调是用领域数据进一步训练模型，使其更懂特定任务；对个人用户通常用提示词+RAG 更划算。'},
+{t:'ai', q:'「数字人 / 数字分身」最常见的应用是？', opts:['代写代码','视频口播、直播带货、客服','取代所有设计师','自动修电脑'], ans:1, ex:'AI 数字人可克隆形象与声音做口播视频，适合短视频创作与直播场景。'},
+{t:'ai', q:'使用 AI 处理工作内容时，最需要注意的合规问题是？', opts:['AI 速度太慢','不要把机密/客户隐私数据随意发给外部 AI 服务','AI 不支持中文','AI 需要充电'], ans:1, ex:'涉及客户机密、个人隐私的数据要脱敏或使用本地/私有化部署方案。'},
+{t:'ai', q:'「多模态模型」的意思是？', opts:['模型有多个版本','能同时处理文字、图片、音频等多种信息','需要多台电脑','只能多语言'], ans:1, ex:'多模态 = 多种模态，如 GPT-4o、Gemini 可看图文、听语音、理解视频。'},
+
+/* ---------- 设计 ---------- */
+{t:'design', q:'RGB 色彩模式主要应用于？', opts:['印刷品','屏幕显示（电子设备）','油漆调色','陶瓷烧制'], ans:1, ex:'RGB 是光的加色模式，用于屏幕；CMYK 是减色模式，用于印刷。'},
+{t:'design', q:'CMYK 中的 K 代表？', opts:['K 蓝色','黑色（Key）','金色','青色'], ans:1, ex:'CMYK = 青（Cyan）、品红（Magenta）、黄（Yellow）、黑（Key）。'},
+{t:'design', q:'色轮上互补色（如红与绿）的关系是？', opts:['相邻','正对面，对比最强','相同','毫无关系'], ans:1, ex:'互补色位于色轮正对面，对比强烈，常用于突出主视觉。'},
+{t:'design', q:'「衬线字体（Serif）」的典型特征是？', opts:['笔画末端有小装饰线','没有装饰线','全是圆点','只有大写'], ans:0, ex:'衬线体如宋体、Times New Roman；无衬线体如黑体、Helvetica，屏幕阅读常用无衬线。'},
+{t:'design', q:'72 DPI 与 300 DPI 的区别是？', opts:['没有区别','300 DPI 常用于印刷，72 DPI 常用于屏幕显示','72 DPI 更清晰','300 DPI 是视频专用'], ans:1, ex:'DPI 是每英寸像素数，印刷要求约 300 DPI，网页/屏幕 72-150 DPI 即可。'},
+{t:'design', q:'品牌 VI（视觉识别系统）通常包含？', opts:['公司财务报表','Logo、标准色、字体、应用规范等','员工名单','产品价格表'], ans:1, ex:'VI 是品牌视觉的标准化体系，保证品牌形象在不同场景下的一致性。'},
+{t:'design', q:'海报构图中「三分法」指的是？', opts:['画面分成三份平均分布','用两条横线两条竖线把画面分成九宫格，主体放交叉点上','只放三个元素','三倍放大大标题'], ans:1, ex:'三分法（九宫格）让主体落在交叉点或线条上，构图更平衡耐看。'},
+{t:'design', q:'「负空间（Negative Space）」在设计中指？', opts:['画面中的空白区域，用于衬托主体','黑色背景','阴影部分','底部空间'], ans:0, ex:'负空间是主体之外的留白，善用留白能提升高级感，如 FedEx 标志中的箭头。'},
+{t:'design', q:'矢量图（Vector）的核心特点是？', opts:['放大不失真，由数学路径构成','放大会模糊','由像素构成','只能用于照片'], ans:0, ex:'矢量图（AI、SVG、PDF）由路径构成，无限放大不失真；位图（JPG、PNG）由像素构成。'},
+{t:'design', q:'UI 设计中的「8pt 网格系统」指？', opts:['字体必须 8 号','间距和尺寸尽量用 8 的倍数，保证节奏统一','屏幕宽度 8 像素','图片质量 8 级'], ans:1, ex:'用 8 的倍数（8/16/24/32）定间距与尺寸，界面更整齐、开发还原更顺畅。'},
+{t:'design', q:'「情绪板（Moodboard）」的作用是？', opts:['记录工作日程','收集图片素材统一风格方向，与客户对齐审美','测试代码','管理账号密码'], ans:1, ex:'接稿时先做情绪板对齐风格，能极大减少返工，是设计师的常用沟通工具。'},
+{t:'design', q:'可访问性设计中，文字与背景的对比度主要影响？', opts:['视觉效果华丽','低视力用户的阅读体验','图片大小','动画流畅度'], ans:1, ex:'对比度不足会让弱视用户看不清内容，WCAG 建议正文对比度至少 4.5:1。'},
+{t:'design', q:'Dribbble 和 Behance 主要用来？', opts:['点外卖','展示与发现设计作品、获取灵感','写代码','买股票'], ans:1, ex:'两者是设计师作品集与灵感平台：Dribbble 偏 UI 小图，Behance 偏完整项目。'},
+{t:'design', q:'渐变（Gradient）设计时常见的注意点是？', opts:['颜色越多越好','注意色带/断层问题，避免对比过强产生视觉噪点','只能黑白渐变','渐变不能用于 Logo'], ans:1, ex:'渐变色带（banding）是常见问题，需注意色彩过渡与对比度，保持高级感。'},
+{t:'design', q:'接稿时交付「源文件」一般指？', opts:['最终 JPG 图片','可编辑的工程文件（如 .ai / .psd / .fig）','PDF 演示稿','压缩包密码'], ans:1, ex:'源文件是客户能二次编辑的工程文件，通常在尾款结清后交付。'},
+{t:'design', q:'「黄金分割比」约等于？', opts:['1:1','1:1.618','1:2','2:3'], ans:1, ex:'黄金分割 ≈ 1:1.618，常见于版式与 Logo 的比例设计中，带来自然的美感。'},
+{t:'design', q:'位图（如 JPG）的清晰度取决于？', opts:['文件大小','分辨率（像素数量）','颜色数量','拍摄时间'], ans:1, ex:'位图由像素构成，分辨率越高越清晰，放大会产生锯齿和马赛克。'},
+{t:'design', q:'色彩心理学中，蓝色通常给人？', opts:['热情冲动','专业、冷静、可信赖','饥饿感','恐怖感'], ans:1, ex:'蓝色常被用于科技、金融品牌，传达专业与信任感。'},
+{t:'design', q:'网页设计中的「F 型阅读模式」指？', opts:['用户按 F 字母形状扫视页面','字体用 F 开头','页面必须折叠','只有外国人这样读'], ans:0, ex:'用户习惯先横看顶部、再竖扫左侧，重要信息应放在这条路径上。'},
+{t:'design', q:'「低保真原型（Lo-fi Wireframe）」的特点是？', opts:['带完整视觉设计','用线条和方框快速表达结构与流程','必须交互','已上线版本'], ans:1, ex:'低保真原型重结构不重视觉，用于快速验证布局与流程，成本极低。'},
+
+/* ---------- GitHub / 开源 ---------- */
+{t:'github', q:'GitHub 上的「Star」相当于？', opts:['付费订阅','收藏/点赞项目，表示关注','雇佣作者','下载代码的密码'], ans:1, ex:'点 Star 类似收藏，方便日后查找；Star 数越高通常代表项目越受欢迎。'},
+{t:'github', q:'「Fork」一个仓库意味着？', opts:['删除仓库','把项目复制到自己账号下，可自由修改','给作者发消息','合并两个项目'], ans:1, ex:'Fork 是复制一份到你的账号，之后你可以任意修改，不影响原项目。'},
+{t:'github', q:'「Clone」操作的结果是？', opts:['把远程仓库下载到本地','在网页上预览','把本地代码上传','删除本地文件'], ans:0, ex:'git clone 把 GitHub 上的项目整个下载到本地电脑，是使用开源项目的第一步。'},
+{t:'github', q:'README 文件的主要作用是？', opts:['记录开发者的日记','项目介绍、安装使用说明','存放图片','代码注释'], ans:1, ex:'README 是项目的说明书，先读它就能了解项目用途、怎么装、怎么用。'},
+{t:'github', q:'GitHub 的「Issue」用于？', opts:['买咖啡','提 Bug、提需求、讨论问题','发布广告','存放代码'], ans:1, ex:'遇到问题可在 Issue 区搜索或提问，很多项目作者会回复；提问前先搜是否已有人问过。'},
+{t:'github', q:'不会写代码，最省事的开源项目使用方式是？', opts:['放弃使用','找 Release 里打包好的可执行文件或在线 Demo','让 AI 抄一遍源码','发邮件给作者要代码'], ans:1, ex:'多数成熟项目在 Release 页面提供打包好的安装包；很多还有在线 Demo 可以先体验。'},
+{t:'github', q:'「Release」页面里通常有什么？', opts:['作者照片','各版本的打包文件、安装包、更新说明','广告','源代码注释'], ans:1, ex:'Release 是正式发布版本，提供编译好的程序/安装包，适合不想折腾代码的用户。'},
+{t:'github', q:'MIT 开源许可证的意思是？', opts:['禁止一切使用','几乎可以自由使用、修改、商用，只需保留版权声明','必须付费','只有美国人能用'], ans:1, ex:'MIT 是最宽松的许可证之一：可自由使用、修改、商用，注明版权即可。'},
+{t:'github', q:'运行「npm install」前，电脑通常需要先装什么？', opts:['Photoshop','Node.js','微信','杀毒软件'], ans:1, ex:'npm 是 Node.js 的包管理器，装好 Node.js（官网 nodejs.org 下载）才有 npm 命令。'},
+{t:'github', q:'终端报错「xxx: command not found」一般说明？', opts:['电脑坏了','该程序没安装，或没加入系统环境变量','网络断了','文件太大'], ans:1, ex:'常见原因：依赖没装全、命令写错、或安装目录未加入 PATH。'},
+{t:'github', q:'GitHub Pages 是做什么的？', opts:['存放数据库','免费托管静态网页，如个人主页、作品集','跑大模型','发邮件'], ans:1, ex:'GitHub Pages 可以把仓库里的静态文件发布成网站，免费且无需服务器，适合个人作品集。'},
+{t:'github', q:'给开源项目提交代码的流程通常是？', opts:['直接改作者代码','Fork → Clone → 修改 → Push → 提 Pull Request','发邮件申请','下载 zip 改完传回去'], ans:1, ex:'Pull Request（PR）是开源协作标准流程：先 Fork，改完提交 PR，作者审核后合并。'},
+{t:'github', q:'「.env」文件通常用来放？', opts:['图片素材','环境变量、API 密钥等配置','日志','代码'], ans:1, ex:'.env 存密钥等本地配置，通常已被 .gitignore 排除、不会上传公开仓库，注意别泄露密钥。'},
+{t:'github', q:'Vercel 的主要用途是？', opts:['视频剪辑','免费/低成本部署前端网站和应用','数据备份','域名注册'], ans:1, ex:'Vercel 与 GitHub 联动，Push 代码即可自动部署前端项目，是部署开源项目的神器。'},
+{t:'github', q:'项目文档中的「Quick Start」通常指？', opts:['快速启动指南，几步跑起来','付费教程','作者的简历','免责声明'], ans:1, ex:'想快速用起来就找 Quick Start / Getting Started，一般包含最短的安装运行步骤。'},
+{t:'github', q:'Docker 对不会代码的人最大的价值是？', opts:['让电脑变快','一条命令启动整套环境，避免手动配置依赖','代替显卡','管理照片'], ans:1, ex:'很多项目提供 docker run 一条命令即可运行，把复杂的环境配置封装好了。'},
+{t:'github', q:'开源项目「Discussions」区主要用于？', opts:['发布版本','社区问答、想法交流','代码审查','存放密钥'], ans:1, ex:'Discussions 是社区讨论区，适合问用法、提想法；Bug 则走 Issue。'},
+{t:'github', q:'GitHub 上项目名旁的「文档 Documentation」一般分哪几类？', opts:['安装 / 使用 / API 参考','价格 / 优惠 / 售后','新闻 / 八卦 / 娱乐','历史 / 地理 / 生物'], ans:0, ex:'成熟项目文档通常分为安装部署、使用教程、API/配置参考，按需查阅。'},
+{t:'github', q:'使用开源项目卡住时，最有效的搜索姿势是？', opts:['只搜项目名','搜「项目名 + 报错信息 + 你的系统」','直接放弃','把报错发朋友圈'], ans:1, ex:'把完整报错信息 + 项目名 + 系统组合搜索，通常能在 Issue 或社区找到答案。'},
+{t:'github', q:'「git pull」命令的作用是？', opts:['把本地代码上传','把远程最新代码更新到本地','删除代码','复制仓库到别处'], ans:0, ex:'pull 拉取更新，让本地代码和远程仓库保持一致；上传用 git push。'},
+
+/* ---------- 效率 / 时间管理 ---------- */
+{t:'eff', q:'番茄工作法的标准节奏是？', opts:['工作 25 分钟 + 休息 5 分钟','工作 8 小时不休息','工作 5 分钟休息 25 分钟','想休息就休息'], ans:0, ex:'经典节奏：25 分钟专注 + 5 分钟休息，每 4 个番茄休息 15-30 分钟。'},
+{t:'eff', q:'「二八法则（帕累托原则）」指？', opts:['80% 的时间都在睡觉','约 80% 的结果来自 20% 的关键投入','20% 的时间工作','所有事情同样重要'], ans:1, ex:'找到带来 80% 产出的那 20% 关键任务，把精力优先投给它。'},
+{t:'eff', q:'艾森豪威尔四象限（时间管理矩阵）按什么分类？', opts:['难度与乐趣','重要性与紧急性','价格与价值','速度与距离'], ans:1, ex:'四象限：重要紧急（马上做）、重要不紧急（重点投入）、紧急不重要（少做/委托）、不重要不紧急（避免）。'},
+{t:'eff', q:'「深度工作（Deep Work）」是指？', opts:['加班到深夜','无干扰的高专注认知工作','一边刷手机一边工作','开会'], ans:1, ex:'深度工作是排除干扰、全神贯注于高价值任务的状态，产出质量远高于碎片化工作。'},
+{t:'eff', q:'「时间块（Time Blocking）」的做法是？', opts:['随机安排','提前把一天切成时间段，每个时段只做一件事','把所有事堆到晚上','完全不做计划'], ans:1, ex:'给重要任务预先划出专属时间段（如上午 9-11 点做设计），避免被杂事打断。'},
+{t:'eff', q:'帕金森定律说的是？', opts:['工作会自动膨胀填满所有可用时间','人越忙越高效','时间越多产出越多','休息浪费时间'], ans:0, ex:'给任务设更紧的截止时间，往往能更快完成；反之时间充裕反而拖延。'},
+{t:'eff', q:'「心流（Flow）」状态的特点是？', opts:['极度无聊','全神贯注、忘记时间、效率极高','焦虑烦躁','昏昏欲睡'], ans:1, ex:'心流是挑战与能力匹配时进入的沉浸状态，是高质量产出与幸福感的重要来源。'},
+{t:'eff', q:'「复盘（Retrospective）」的核心目的是？', opts:['批评自己','从过去总结经验，改进下次行动','写日记','应付老板'], ans:1, ex:'复盘四步：回顾目标 → 结果对比 → 分析原因 → 提炼改进措施。'},
+{t:'eff', q:'OKR 中的 O 和 KR 分别指？', opts:['目标（Objective）与关键结果（Key Results）','组织与客户','运营与收入','选项与答案'], ans:0, ex:'OKR：O 是有挑战的方向性目标，KR 是可衡量的关键结果，如「O: 提升设计效率 KR: 模板复用率 60%」。'},
+{t:'eff', q:'「微习惯」策略的核心是？', opts:['制定宏大目标','把习惯缩小到极小、每天必做（如每天 1 个俯卧撑）','只做一次','靠意志力硬撑'], ans:1, ex:'微习惯降低启动门槛，先坚持起来，再逐步加量，比追求完美更容易长期执行。'},
+{t:'eff', q:'「每日三件事」工作法的要点是？', opts:['每天列出最重要的三件事优先完成','每天只工作 3 分钟','每天列 30 件事','把三件事同时做'], ans:0, ex:'早晨列出当天最重要的三件事，聚焦完成，比长长的清单更有效。'},
+{t:'eff', q:'「精力管理」与时间管理的区别在于？', opts:['没有区别','精力管理关注状态与节奏，在高精力时段做难事','时间管理没用','精力管理只关乎睡觉'], ans:1, ex:'人的精力有波峰波谷，把难事放在高精力时段（多数人上午），低精力时段做琐事。'},
+{t:'eff', q:'「多任务处理」对效率的真实影响是？', opts:['效率翻倍','频繁切换任务会显著降低效率与质量','不影响','只影响记忆力'], ans:1, ex:'大脑切换任务有成本，看似同时做多件事，实际是频繁切换，反而更慢更易出错。'},
+{t:'eff', q:'习惯养成中「提示 → 行动 → 奖励」循环属于哪本书的理论？', opts:['《国富论》','《掌控习惯》','《三体》','《小王子》'], ans:1, ex:'《掌控习惯》（James Clear）提出习惯四法则：让它显而易见、有吸引力、简便易行、令人愉悦。'},
+{t:'eff', q:'自由职业者保持自律最有效的手段通常是？', opts:['靠临时意志力','建立固定作息与工作环境，用系统代替自律','睡到自然醒','等灵感来了再工作'], ans:1, ex:'固定时间起床、固定工作地点、每天三件事，把自律变成系统，比靠意志力可靠得多。'},
+{t:'eff', q:'「单任务专注」的正确做法是？', opts:['手机静音/放远，关掉多余标签页，一次只做一件事','边听剧边工作','随时回消息','每 5 分钟刷一次手机'], ans:0, ex:'物理隔离干扰源是进入专注最快的方式，手机放另一个房间效果最好。'},
+
+/* ---------- 通用 / 自由职业 ---------- */
+{t:'gen', q:'自由职业接稿时，收取「定金」的主要原因是？', opts:['赚更多钱','规避客户中途取消或跑单的风险','客户要求的','行业潜规则没有意义'], ans:1, ex:'一般收 30%-50% 定金再开工，双方确认方向后支付，能有效保护自己免受白干。'},
+{t:'gen', q:'接稿前签合同/协议最重要的作用是？', opts:['走形式','明确交付内容、时间、修改次数、付款节点，避免扯皮','增加成本','方便打官司'], ans:1, ex:'哪怕是一页简单的文字协议，也能把「改几次稿」「尾款什么时候付」讲清楚，省掉大量纠纷。'},
+{t:'gen', q:'自由职业者最需要养成的财务习惯是？', opts:['有多少花多少','收入到账先固定比例存下来，预留生活储备金','全买股票','不记账'], ans:1, ex:'自由职业收入波动大，建议把收入的 20-30% 先储蓄，并预留 3-6 个月生活费的应急金。'},
+{t:'gen', q:'「副业 / 创业项目」选择时最应优先考虑？', opts:['别人都做什么','自己擅长且有兴趣、能持续投入的方向','哪个来钱快做哪个','完全不做准备'], ans:1, ex:'兴趣+能力+市场需求三者交集最可持续；单看"来钱快"往往坚持不下来。'},
+{t:'gen', q:'「睡后收入（被动收入）」指？', opts:['睡觉也能赚钱的收入','睡醒才记的账','加班费','年终奖'], ans:0, ex:'被动收入如作品版权、模板售卖、课程、数字产品，一次投入持续产生收益，是自由职业的进阶方向。'},
+{t:'gen', q:'自由职业定价时「价值定价」的思路是？', opts:['按自己花了多少小时','按给客户带来的价值与市场行情','随便报','比所有人都便宜'], ans:1, ex:'先了解市场价，再结合你的专业度与客户价值定价；长期压价会透支自己。'},
+{t:'gen', q:'提高自由职业收入的核心杠杆是？', opts:['接更多低价单','提升单位时间价值 + 打造可复用作品/模板','熬夜加班','不停换平台'], ans:1, ex:'同样时间创造更多价值（涨价）＋ 让作品产生复利（模板/课程/版权），比单纯堆量健康。'},
+{t:'gen', q:'「复利思维」在个人成长中的体现是？', opts:['每天进步一点点，长期积累产生指数效应','今天努力明天就有回报','只学感兴趣的','把所有时间花在社交'], ans:0, ex:'每天学习/练习 1%，一年约提升 37 倍；成长是长期主义，短期的平台期很正常。'},
+{t:'gen', q:'找创业项目时，「痛点」是指？', opts:['用户的抱怨','用户的真实问题与不便，是机会的起点','产品缺点','竞争对手的弱点'], ans:1, ex:'好创业项目往往源于真实痛点：越痛、越频繁、越愿意付费，机会越大。'},
+{t:'gen', q:'自由职业者发展客户最有效的方式之一是？', opts:['群发广告','持续输出作品与专业内容，建立个人品牌','等客户上门','只接熟人单'], ans:1, ex:'在小红书/站酷/Behance 持续发作品和干货，让客户"主动找你"，比群发有效得多。'},
+{t:'gen', q:'「最小验证」创业思路指？', opts:['先把全部功能做完','用最低成本最快速度验证有没有人愿意付费','先租办公室','先招 10 个员工'], ans:1, ex:'如先做几套模板发出去，看有没有人买，再决定要不要做成产品，避免闭门造车。'},
+{t:'gen', q:'自由职业「接单 → 交付」的最优流程是？', opts:['收到需求就开干','沟通需求 → 报价签协议 → 定金 → 初稿 → 修改 → 尾款交付源文件','先做再谈钱','做完再说价格'], ans:1, ex:'按流程走能减少 90% 的坑：需求对齐、定金、修改次数上限、尾款后给源文件。'},
+];
+const QUIZ_TOPICS = { pm:'📊 产品经理', ai:'🤖 AI', design:'🎨 设计', github:'🐙 GitHub/开源', eff:'⚡ 效率', gen:'💼 自由职业' };
+function quizOfDay(){
+  const seed = randomSeed(today());
+  const rnd = mulberry32(seed);
+  const groups = {};
+  QUIZ_BANK.forEach(q=>{ (groups[q.t]=groups[q.t]||[]).push(q); });
+  Object.keys(groups).forEach(k=>{ groups[k]=shuffle(groups[k],rnd); });
+  const picked=[]; const keys=Object.keys(groups); let gi=0;
+  while(picked.length<10){ const k=keys[gi%keys.length]; if(groups[k].length){ picked.push(groups[k].shift()); } gi++; if(gi>keys.length*3) break; }
+  return picked;
+}
+function renderQuiz(){
+  const hist=DB.quizHist||[]; const done=hist.find(h=>h.date===today());
+  const box=$('#quizBox');
+  if(done && !done.redo){
+    const ok=done.score, tot=done.total;
+    box.innerHTML=`<div class="card" style="text-align:center;padding:34px">
+      <div style="font-size:40px">${ok/tot>=0.8?'🏆':ok/tot>=0.6?'👍':'💪'}</div>
+      <h2 style="margin:8px 0">今日已完成 · ${ok}/${tot}</h2>
+      <div class="muted">正确率 ${Math.round(ok/tot*100)}% · 解析见下方回顾</div>
+      <div style="margin-top:14px"><button class="btn" id="quizRedo">🔄 重做今天的题</button> <button class="btn ghost" id="quizReview">📖 回顾今日答题</button></div>
+      <div class="hr"></div>
+      <div style="max-height:340px;overflow-y:auto;text-align:left" id="quizReviewBox"></div>
+    </div>`;
+    $('#quizRedo').onclick=()=>{ done.redo=true; save(); renderQuiz(); };
+    $('#quizReview').onclick=()=>{
+      const rb=$('#quizReviewBox');
+      if(rb.style.display==='none'||!rb.innerHTML){ rb.style.display='block';
+        rb.innerHTML=done.items.map((it,i)=>`<div class="quiz-q" style="margin-bottom:10px"><div class="qq">${i+1}. ${esc(it.q)}</div><div class="small">你的答案：<b class="${it.ok?'ok':'no'}">${it.opts[it.chose]}</b> ${it.ok?'✓ 正确':'✗ 错误'}</div><div class="small">正确答案：${it.opts[it.ans]}</div><div class="explain">${esc(it.ex)}</div></div>`).join('');
+      } else { rb.style.display='none'; }
+    };
+    return;
+  }
+  const questions=quizOfDay();
+  box.innerHTML=`<div class="card" style="margin-bottom:14px">
+    <div class="row between wrap"><div><b>今日 10 题</b> <span class="muted small">${todayCN()} · 每天题目不同 · 做完逐题看解析</span></div>
+    <div class="muted small">已答 <span class="num" id="qProgress">0</span>/10</div></div>
+    <progress id="qBar" value="0" max="10"></progress>
+  </div><div id="qArea"></div>`;
+  let idx=0, correct=0, items=[];
+  function showQ(){
+    if(idx>=10){ finish(); return; }
+    const q=questions[idx];
+    $('#qArea').innerHTML=`<div class="quiz-q">
+      <span class="tag blue">${QUIZ_TOPICS[q.t]||q.t}</span><span class="tag gray">第 ${idx+1} / 10 题</span>
+      <div class="qq">${esc(q.q)}</div>
+      ${q.opts.map((o,i)=>`<div class="opt" data-i="${i}"><span class="k">${'ABCD'[i]}</span><span>${esc(o)}</span></div>`).join('')}
+      <div class="explain hide" id="qEx"></div>
+      <div style="margin-top:12px" class="row"><button class="btn" id="qNext" disabled>确认答案</button></div>
+    </div>`;
+    let chosen=null;
+    $$('#qArea .opt').forEach(o=>o.onclick=()=>{
+      if(chosen!==null) return; chosen=+o.dataset.i;
+      $$('#qArea .opt').forEach(x=>x.classList.add('lock'));
+      o.classList.add('sel');
+      const ok = chosen===q.ans;
+      if(ok) correct++;
+      items.push({q:q.q,opts:q.opts,chose:chosen,ans:q.ans,ex:q.ex,ok});
+      $('#qEx').innerHTML=`<span class="${ok?'ok':'no'}">${ok?'✓ 回答正确！':'✗ 答错了'}</span> · 答案：<b>${q.opts[q.ans]}</b><br><br>📖 ${esc(q.ex)}`;
+      $('#qEx').classList.remove('hide');
+      $('#qNext').disabled=false; $('#qNext').textContent='下一题 →';
+      if(ok){ o.classList.add('right'); } else { o.classList.add('wrong'); $$('#qArea .opt')[q.ans].classList.add('right'); }
+    });
+    $('#qNext').onclick=()=>{ idx++; $('#qProgress').textContent=idx; $('#qBar').value=idx; showQ(); };
+  }
+  function finish(){
+    DB.quizHist=DB.quizHist||[]; DB.quizHist=DB.quizHist.filter(h=>h.date!==today());
+    DB.quizHist.push({date:today(),score:correct,total:10,items}); save();
+    renderQuiz();
+  }
+  showQ();
+}
+$('#quizHistBtn').addEventListener('click', ()=>{
+  const hist=(DB.quizHist||[]).slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30);
+  const total=hist.reduce((s,h)=>s+h.total,0); const ok=hist.reduce((s,h)=>s+h.score,0);
+  openModal(`
+    <h3>📊 历史成绩</h3>
+    ${hist.length?`<div class="muted small" style="margin-bottom:10px">累计做题 ${total} 题 · 正确 ${ok} 题 · 总正确率 ${total?Math.round(ok/total*100):0}%</div>
+    <table class="tbl"><tr><th>日期</th><th>成绩</th><th>正确率</th></tr>
+    ${hist.map(h=>`<tr><td>${h.date}</td><td class="num"><b>${h.score}</b>/${h.total}</td><td><progress value="${h.score}" max="${h.total}" style="width:80px"></progress> ${Math.round(h.score/h.total*100)}%</td></tr>`).join('')}</table>
+    <div class="muted small" style="margin-top:8px">💡 连续多天正确率 70%+ 再挑战更难的题，学习才扎实。</div>`
+    :'<div class="empty">还没有答题记录，先去完成今日十题吧</div>'}
+    <div class="modal-foot"><button class="btn ghost" onclick="closeModal()">关闭</button></div>`);
+});
+/* =========================================================
+   ⑪ 时间追踪（语音记录 / 计时 / 日周看板 / 建议）
+========================================================= */
+const TIME_CATS = {
+  work:['💼','工作','#5b5fe9'],
+  create:['🎨','创作','#ff8a3d'],
+  learn:['📚','学习','#8b5cf6'],
+  fit:['🧘','健身','#22b573'],
+  ent:['📱','娱乐','#3d8bfd'],
+  sleep:['😴','睡眠','#7c8db5'],
+  life:['🍚','生活','#f5b40a'],
+  other:['📦','其他','#94a3b8']
+};
+function autoCat(act){
+  const s=act.toLowerCase();
+  const rules=[
+    [/工作|上班|开会|对接|客户|报价|回复|写方案/, 'work'],
+    [/写文案|文案|画图|设计|接稿|修图|海报|Logo|建模|作图|剪视频|剪辑/, 'create'],
+    [/学习|笔记|看书|读书|课程|产品经理|AI|研究|做题|十题|背单词|考试/, 'learn'],
+    [/瑜伽|健身|跑步|运动|锻炼|拉伸|游泳|骑行|打球/, 'fit'],
+    [/看视频|刷|抖音|B站|游戏|追剧|小红书|娱乐|发呆|微博|知乎/, 'ent'],
+    [/睡觉|午休|睡眠|补觉/, 'sleep'],
+    [/吃饭|做饭|洗澡|家务|通勤|购物|洗衣|遛狗|带娃|买菜|打扫/, 'life']
+  ];
+  for(const [re,c] of rules){ if(re.test(s)) return c; }
+  return 'other';
+}
+const CN_NUM = {零:0,一:1,二:2,两:2,俩:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9,十:10,半:0.5};
+function cn2num(s){ if(s==null) return null; if(/^\d+(\.\d+)?$/.test(s)) return parseFloat(s); if(CN_NUM[s]!=null) return CN_NUM[s]; return null; }
+function parseVoice(text){
+  let t=String(text||'');
+  let start=null, end=null, dur=null;
+  const adj=(part,h)=>{ if(!part) return h; if(part.includes('下午')||part.includes('晚上')) return h<12?h+12:h; if(part.includes('中午')) return h<12?h+12:h; if(part.includes('凌晨')&&h===12) return 0; return h; };
+  let m=t.match(/(凌晨|早上|上午|中午|下午|晚上)?\s*(\d{1,2})[:：点时]\s*(\d{1,2})?\s*(?:分)?\s*(?:到|至|~|—|-)\s*(凌晨|早上|上午|中午|下午|晚上)?\s*(\d{1,2})[:：点时]\s*(\d{1,2})?\s*(?:分)?/);
+  if(m){
+    let h1=adj(m[1],+m[2]), h2=adj(m[4],+m[5]);
+    if(!m[4] && h2<h1 && h2<=12) h2+=12;             // "下午3点到4点" → 4点按下午算
+    start=pad(h1)+':'+pad(+(m[3]||0)); end=pad(h2)+':'+pad(+(m[6]||0));
+    dur=(h2*60+(+(m[6]||0)))-(h1*60+(+(m[3]||0))); if(dur<0) dur+=1440;
+    t=t.replace(m[0],' ');
+  }
+  m=t.match(/(\d+|一|二|两|俩)\s*个\s*半\s*(?:个)?(小时|钟头)/);
+  if(m && dur===null){ dur=Math.round((cn2num(m[1])+0.5)*60); t=t.replace(m[0],' '); }
+  else {
+    m=t.match(/半\s*(?:个)?(小时|钟头)/);
+    if(m && dur===null){ dur=30; t=t.replace(m[0],' '); }
+    else {
+      m=t.match(/(\d+(?:\.\d+)?|半|零|一|二|两|俩|三|四|五|六|七|八|九|十)\s*(?:个)?(小时|钟头|分钟|分|h|hr|min|mins|刻钟)/i);
+      if(m && dur===null){
+        const v=cn2num(m[1]); if(v!=null){ const unit=m[2].toLowerCase();
+          dur = /小时|钟头|h|hr/.test(unit)? Math.round(v*60) : /刻钟/.test(unit)? Math.round(v*15) : Math.round(v);
+          t=t.replace(m[0],' ');
+        }
+      }
+    }
+  }
+  let act=t.replace(/[，。,。！!？?、:：]/g,' ').replace(/\s+/g,' ').trim();
+  return {act,dur,start,end};
+}
+function renderTime(){
+  const t=today();
+  const recs=DB.time.filter(r=>r.date===t).sort((a,b)=>(a.start||'99').localeCompare(b.start||'99'));
+  const sum=recs.reduce((s,r)=>s+(+r.dur||0),0);
+  $('#timeTodaySum').textContent = `共 ${fmtMin(sum)} · ${recs.length} 条`;
+  $('#timeTodayList').innerHTML = recs.length? recs.map(r=>{
+    const [ic,cn,col]=TIME_CATS[r.cat]||TIME_CATS.other;
+    return `<div class="row between" style="padding:7px 2px;border-bottom:1px dashed var(--line)">
+      <div class="row"><span style="width:22px;text-align:center">${ic}</span><div><div style="font-size:13.5px">${esc(r.act)}</div><div class="small muted">${r.start?r.start+' ':' '}${cn}</div></div></div>
+      <div class="row"><b class="num" style="color:${col}">${fmtMin(+r.dur)}</b><button class="del-x" data-del="${r.id}">✕</button></div>
+    </div>`; }).join('') : '<div class="empty" style="padding:20px">今天还没有记录，说一句「看视频 30分钟」试试</div>';
+  /* 时间轴 */
+  const tl=$('#timeTimeline');
+  const withStart=recs.filter(r=>r.start);
+  if(!withStart.length){ tl.innerHTML='<div class="empty" style="padding:20px">有开始时间的记录会显示在这里（时间轴 0-24 点）</div>'; }
+  else {
+    let html='';
+    withStart.forEach(r=>{
+      const [h,mi]=r.start.split(':').map(Number); const sm=h*60+mi;
+      const left=sm/1440*100; const w=Math.min((+r.dur||0)/1440*100, 100-left);
+      const [ic,cn,col]=TIME_CATS[r.cat]||TIME_CATS.other;
+      html+=`<div class="tl-row"><div class="tl-seg" style="left:${left}%;width:${w}%;background:${col}" title="${esc(r.act)} ${fmtMin(+r.dur)}">${ic} ${esc(r.act)}</div></div>`;
+    });
+    tl.innerHTML = html;
+  }
+  /* 图例 */
+  const usedCats = new Set(recs.map(r=>r.cat));
+  $('#timeLegend').innerHTML = Object.keys(TIME_CATS).filter(c=>usedCats.has(c)).map(c=>`<span class="lg"><span class="dot" style="background:${TIME_CATS[c][2]}"></span>${TIME_CATS[c][1]}</span>`).join('') || '<span class="muted small">暂无分类</span>';
+  /* 周看板 */
+  renderWeek();
+  renderSuggest();
+}
+function weekRange(){
+  const now=new Date(); const dow=(now.getDay()+6)%7;
+  const mon=new Date(now); mon.setDate(now.getDate()-dow); mon.setHours(0,0,0,0);
+  const keys=[]; for(let i=0;i<7;i++){ const d=new Date(mon); d.setDate(mon.getDate()+i); keys.push(d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())); }
+  return keys;
+}
+function renderWeek(){
+  const keys=weekRange();
+  const weekRecs=DB.time.filter(r=>keys.includes(r.date));
+  const byCat={}; let total=0;
+  weekRecs.forEach(r=>{ byCat[r.cat]=(byCat[r.cat]||0)+(+r.dur||0); total+=+r.dur||0; });
+  /* 各类别水平条形 */
+  const catHtml = Object.keys(TIME_CATS).filter(c=>byCat[c]).sort((a,b)=>byCat[b]-byCat[a]).map(c=>{
+    const [ic,cn,col]=TIME_CATS[c]; const v=byCat[c]; const pct=total?Math.round(v/total*100):0;
+    return `<div class="row" style="margin-bottom:8px">
+      <span style="width:70px;font-size:12.5px">${ic} ${cn}</span>
+      <div class="flex1"><div style="height:14px;background:var(--bg);border-radius:7px;overflow:hidden"><div style="height:100%;width:${Math.max(pct,2)}%;background:${col};border-radius:7px"></div></div></div>
+      <b class="num small" style="width:52px;text-align:right">${fmtMin(v)}</b>
+      <span class="muted small" style="width:36px;text-align:right">${pct}%</span>
+    </div>`;
+  }).join('')||'<div class="empty" style="padding:16px">本周还没有记录</div>';
+  /* 近7天每日柱状 */
+  const dayHtml = keys.map(k=>{ const v=DB.time.filter(r=>r.date===k).reduce((s,r)=>s+(+r.dur||0),0); return `<div style="flex:1;text-align:center"><div style="height:70px;display:flex;align-items:flex-end;justify-content:center"><div style="width:60%;min-height:3px;background:var(--primary);border-radius:4px 4px 0 0;height:${Math.min(v/1440*100,100)}%"></div></div><div class="small muted" style="margin-top:4px">${k.slice(5)}</div><div class="small num">${v?Math.round(v/60*10)/10+'h':''}</div></div>`; }).join('');
+  $('#timeWeek').innerHTML = `<div class="small muted" style="margin-bottom:6px">本周（周一至今日）各类别时长 · 共 ${fmtMin(total)}</div>${catHtml}<div class="hr"></div><div class="row" style="gap:4px">${dayHtml}</div>`;
+}
+function renderSuggest(){
+  const keys=weekRange(); const weekRecs=DB.time.filter(r=>keys.includes(r.date));
+  const byCat={}; weekRecs.forEach(r=>{ byCat[r.cat]=(byCat[r.cat]||0)+(+r.dur||0); });
+  const total=weekRecs.reduce((s,r)=>s+(+r.dur||0),0);
+  const days=weekRecs.length? new Set(weekRecs.map(r=>r.date)).size : 0;
+  const S=[];
+  const push=(lv,ic,title,detail)=>S.push({lv,ic,title,detail});
+  const H=60*60, M=60;
+  const h=c=>(byCat[c]||0)/H;
+  if(total<20*H || days<5){ push('warn','📉',`记录还不够（${days} 天 / ${Math.round(total/H*10)/10}h）`,'每天随手记 2-3 条，7 天后建议才会准。坚持记录本身就是进步。'); }
+  else {
+    const sleep=h('sleep'), learn=h('learn'), ent=h('ent'), fit=h('fit'), work=h('work'), create=h('create'), life=h('life');
+    if(learn>=10) push('good','📚','学习投入优秀','本周学习 '+Math.round(learn*10)/10+' 小时，继续保持，每天十题也在帮你巩固。');
+    else if(learn>=7) push('good','📚','学习状态不错','本周学习 '+Math.round(learn*10)/10+' 小时，试试再挤出 2 小时深度研究一个 AI 工具。');
+    else if(total>20*H) push('warn','📚','学习时间偏少','本周仅 '+Math.round(learn*10)/10+' 小时学习，建议每天固定 1 小时学习时间块（如晚上 21:00-22:00）。');
+    if(fit>=3) push('good','🧘','运动习惯优秀','本周运动 '+Math.round(fit*10)/10+' 小时，瑜伽 7:40-8:40 坚持得不错。');
+    else if(fit<2.5 && total>20*H) push('warn','🧘','运动偏少','本周健身仅 '+Math.round(fit*10)/10+' 小时。别错过每天早晨的瑜伽时间块，运动能直接提升专注力。');
+    if(ent>14) push('bad','📱','娱乐时间偏多','本周刷手机/看视频 '+Math.round(ent*10)/10+' 小时。试试：把娱乐 App 移出首屏，用「想看视频 → 先做 10 分钟十题」替代。');
+    else if(ent>7) push('warn','📱','娱乐可再收敛','本周娱乐 '+Math.round(ent*10)/10+' 小时，控制在 7 小时内会更平衡。');
+    if(sleep<42 && total>20*H) push('bad','😴','睡眠可能不足','本周睡眠约 '+Math.round(sleep*10)/10+' 小时（平均 '+Math.round(sleep/7*10)/10+'h/晚）。长期不足会严重降低创作质量，试试固定 23:30 前放下手机。');
+    if(sleep>=56) push('good','😴','睡眠充足','平均 '+Math.round(sleep/7*10)/10+' 小时/晚，精力管理很到位。');
+    if(work+create<30) push('warn','💼','工作投入偏低','本周工作+创作 '+Math.round((work+create)*10)/10+' 小时。自由职业者建议 30h+，是否有单可接？去接稿看板看看。');
+    else if(work+create>=40) push('good','💼','工作投入饱满','本周工作+创作 '+Math.round((work+create)*10)/10+' 小时，记得预留休息与复盘时间。');
+    if(life>0 && life<3.5) push('warn','🍚','生活/休息时间太少','本周生活类仅 '+Math.round(life*10)/10+' 小时，做饭、散步、放空也是生产力的一部分。');
+  }
+  const undone=DB.todos.filter(t=>!t.done).length;
+  if(undone>=6) push('warn','✅','待办积压了','还有 '+undone+' 条未完成。用「重要紧急四象限」重新排：先砍掉不重要的，再集中火力处理前三件。');
+  $('#timeSuggest').innerHTML = S.length? S.map(s=>`<div class="sugg ${s.lv}"><div class="si">${s.ic}</div><div class="flex1"><b style="font-size:13.5px">${s.title}</b><div class="small muted" style="margin-top:2px">${s.detail}</div></div></div>`).join('') : '<div class="empty" style="padding:16px">多记录几天，这里会自动生成专属建议</div>';
+}
+/* --- 语音输入 --- */
+let recog=null, listening=false;
+function initVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ $('#micBtn').title='当前浏览器不支持语音，请用文字输入'; $('#micBtn').style.opacity=.4; return; }
+  recog=new SR(); recog.lang='zh-CN'; recog.interimResults=false; recog.continuous=false;
+  recog.onresult=e=>{
+    const txt=e.results[0][0].transcript;
+    const p=parseVoice(txt);
+    $('#timeAct').value=p.act||txt;
+    if(p.start) $('#timeStart').value=p.start;
+    if(p.dur){ $('#timeDur').value=p.dur; $('#timeUnit').value='min'; }
+    stopMic();
+    if(p.act){ toast('🎤 已识别：「'+p.act+'」'+(p.dur?' '+fmtMin(p.dur):'')); } else { toast('🎤 没听清活动，请再说一次或手动输入'); }
+  };
+  recog.onerror=e=>{ stopMic(); toast('🎤 语音识别失败：'+e.error); };
+  recog.onend=()=>stopMic();
+}
+function stopMic(){ listening=false; $('#micBtn').classList.remove('voice-on'); $('#micBtn').textContent='🎤'; if(recog) try{recog.stop();}catch(e){} }
+$('#micBtn').addEventListener('click', ()=>{
+  if(listening){ stopMic(); return; }
+  if(!recog){ toast('当前浏览器不支持语音识别，请用 Chrome/Edge'); return; }
+  listening=true; $('#micBtn').classList.add('voice-on'); $('#micBtn').textContent='⏺';
+  try{ recog.start(); }catch(e){ toast('请允许麦克风权限'); stopMic(); }
+});
+/* --- 计时模式 --- */
+let timerState=null;
+function renderTimerBtn(){
+  const b=$('#timeTimer');
+  if(timerState){ b.textContent='⏹ 结束计时 ('+timerState.act+')'; b.className='btn danger sm'; b.style.background='var(--red)'; }
+  else { b.textContent='⏱ 开始计时'; b.className='btn ghost sm'; }
+  $('#timeTimerLabel').textContent = timerState? '计时中… 结束会自动保存时长':'';
+}
+$('#timeTimer').addEventListener('click', ()=>{
+  if(timerState){
+    const dur=Math.max(1, Math.round((Date.now()-timerState.ts)/60000));
+    const rec={id:uid(),date:today(),start:timerState.start,dur,act:timerState.act,cat:autoCat(timerState.act)};
+    DB.time.push(rec); save();
+    toast('✅ 已记录「'+timerState.act+'」'+fmtMin(dur));
+    timerState=null; renderTimerBtn(); renderTime(); refreshDash();
+  } else {
+    const act=$('#timeAct').value.trim();
+    if(!act){ toast('先填一下在做什么'); return; }
+    timerState={act,ts:Date.now(),start:new Date().getHours()+':'+pad(new Date().getMinutes())};
+    renderTimerBtn();
+  }
+});
+/* --- 保存记录 --- */
+function saveTimeRec(){
+  const act=$('#timeAct').value.trim(); if(!act){ toast('请填写：在做什么'); return; }
+  const unit=$('#timeUnit').value;
+  let dur=Math.round(+$('#timeDur').value||0);
+  if(unit==='hour') dur*=60;
+  if(!dur){ toast('请填写用了多久，或直接点「开始计时」'); return; }
+  const start=$('#timeStart').value.trim();
+  const cat=$('#timeCat').value==='auto'?autoCat(act):$('#timeCat').value;
+  DB.time.push({id:uid(),date:today(),start,dur,act,cat});
+  save(); $('#timeAct').value=''; $('#timeDur').value=''; $('#timeStart').value=''; $('#timeCat').value='auto';
+  renderTime(); refreshDash(); toast('✅ 已记录 '+fmtMin(dur));
+}
+$('#timeSave').addEventListener('click', saveTimeRec);
+$('#timeAct').addEventListener('keydown', e=>{ if(e.key==='Enter') saveTimeRec(); });
+$('#timeTodayList').addEventListener('click', e=>{
+  const d=e.target.closest('[data-del]'); if(!d) return;
+  DB.time=DB.time.filter(r=>r.id!==d.dataset.del); save(); renderTime(); refreshDash();
+});
+/* =========================================================
+   Dashboard 概览 + 初始化
+========================================================= */
+const QUOTES = [
+  '设计是把平凡变非凡的魔法 ✨',
+  '今天的练习，是明天作品集的底气',
+  '自由职业的自由，来自每天的自律',
+  '先完成，再完美。动起来最重要',
+  '记录时间，就是在管理人生 ⏱️',
+  '每一份用心交付的稿子，都在积累口碑',
+  '学习是自由职业者最稳的投资',
+  '少刷 30 分钟手机，多画 30 分钟图',
+  '你的技能组合就是你的护城河',
+  '接一单，学一招，涨一价',
+  '灵感属于持续行动的人',
+  '慢慢来，比较快'
+];
+function updateBadges(){
+  const n=DB.todos.filter(t=>!t.done).length;
+  const b=$('#badgeTodo');
+  b.textContent=n; b.classList.toggle('hide', n===0);
+}
+function renderDash(){
+  const d=new Date();
+  $('#heroDate').textContent = todayCN()+' · '+['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][d.getDay()];
+  $('#heroTitle').textContent = greet()+'，设计师 🎨';
+  const q=QUOTES[randomSeed(today())%QUOTES.length];
+  $('#heroHi').textContent = q;
+  /* 快捷入口 */
+  const undone=DB.todos.filter(t=>!t.done).length;
+  const pomoN=(DB.pomoDays&&DB.pomoDays[today()])||0;
+  const quizDone=!!(DB.quizHist||[]).find(h=>h.date===today());
+  const todaySum=DB.time.filter(r=>r.date===today()).reduce((s,r)=>s+(+r.dur||0),0);
+  $('#quickGrid').innerHTML=[
+    ['📋','今日待办',undone?`${undone} 条未完成`:'今天没有待办', 'todos'],
+    ['🍅','番茄专注',`今日已完成 ${pomoN} 个番茄`, 'pomo'],
+    ['📝','每日十题',quizDone?'今日已做完':'今天还没做题', 'quiz'],
+    ['⏱️','时间记录',todaySum?`已记录 ${fmtMin(todaySum)}`:'今天还没记录', 'time']
+  ].map(c=>`<div class="quick" data-goto="${c[3]}"><div class="qi">${c[0]}</div><b>${c[1]}</b><small>${c[2]}</small></div>`).join('');
+  /* 今日待办 */
+  const tl=DB.todos.filter(t=>!t.done).slice(0,5);
+  $('#dashTodos').innerHTML = tl.length? tl.map(t=>`<div class="row" style="padding:6px 0"><span class="tag ${t.cat}" style="min-width:40px;justify-content:center">${TODO_CATS[t.cat]||t.cat}</span><span class="flex1 small">${esc(t.text)}</span>${t.prio===1?'<span class="tag red">高</span>':''}</div>`).join('') : '<div class="empty" style="padding:12px">全部完成，给自己点个赞 🎉</div>';
+  $('#dashTodoStat').textContent = `未完成 ${undone} 条`;
+  /* 今日时间分布 */
+  const tr=DB.time.filter(r=>r.date===today()); const byCat={}; tr.forEach(r=>{byCat[r.cat]=(byCat[r.cat]||0)+(+r.dur||0);});
+  const total=Object.values(byCat).reduce((a,b)=>a+b,0);
+  $('#dashTime').innerHTML = total? Object.keys(byCat).sort((a,b)=>byCat[b]-byCat[a]).slice(0,5).map(c=>{const [ic,cn,col]=TIME_CATS[c]||TIME_CATS.other; const p=Math.round(byCat[c]/total*100); return `<div class="row" style="margin-bottom:6px"><span class="small" style="width:52px">${ic} ${cn}</span><div class="flex1"><div style="height:10px;background:var(--bg);border-radius:5px;overflow:hidden"><div style="height:100%;width:${Math.max(p,3)}%;background:${col}"></div></div></div><b class="small num" style="width:52px;text-align:right">${fmtMin(byCat[c])}</b></div>`;}).join('') : '<div class="empty" style="padding:12px">今天还没记录时间，去时间追踪说一句试试</div>';
+  /* 习惯 */
+  const t=today();
+  $('#dashHabits').innerHTML = DB.habits.length? DB.habits.map(h=>`<div class="row between" style="padding:6px 0"><span>${h.icon} ${esc(h.name)} <span class="muted small">${h.time||''}</span></span>${h.records[t]?'<span class="tag green">✓ 已打卡</span>':'<span class="tag gray">未打卡</span>'}</div>`).join('') : '<div class="empty" style="padding:12px">还没有习惯，去添加瑜伽打卡</div>';
+  /* 十题 */
+  const qd=!!(DB.quizHist||[]).find(h=>h.date===t);
+  $('#dashQuiz').innerHTML = qd? '<div class="empty" style="padding:16px">✅ 今日十题已完成，明天再来</div>' : '<div class="empty" style="padding:16px">今天还没做题，来 10 道巩固知识吧 →</div>';
+  /* 项目 */
+  const doing=DB.projects.filter(p=>p.stage==='doing'||p.stage==='review').slice(0,4);
+  $('#dashProjects').innerHTML = doing.length? doing.map(p=>`<div class="row between" style="padding:6px 0"><span class="small flex1">${esc(p.name)}</span>${p.deadline&&p.deadline<today()?'<span class="tag red">逾期</span>':'<span class="tag blue">'+p.stage+'</span>'}</div>`).join('') : '<div class="empty" style="padding:12px">暂无进行中的项目</div>';
+  /* 便签 */
+  const ns=DB.notes.slice().sort((a,b)=>b.created-a.created).slice(0,3);
+  $('#dashNotes').innerHTML = ns.length? ns.map(n=>`<div class="small" style="padding:5px 0;border-bottom:1px dashed var(--line)">${esc(n.text.slice(0,46))}${n.text.length>46?'…':''}</div>`).join('') : '<div class="empty" style="padding:12px">灵感便签是空的</div>';
+}
+RENDER.dashboard=renderDash;
+RENDER.todos=renderTodos;
+RENDER.pomo=renderPomo;
+RENDER.notes=renderNotes;
+RENDER.bookmarks=renderBm;
+RENDER.projects=renderProjects;
+RENDER.video=renderVideos;
+RENDER.habits=renderHabits;
+RENDER.ideas=renderIdeas;
+RENDER.learn=renderLearn;
+RENDER.quiz=renderQuiz;
+RENDER.time=renderTime;
+function refreshDash(){ if($('#view-dashboard').classList.contains('active')) renderDash(); updateBadges(); }
+
+/* ================= 初始化 ================= */
+initVoice();
+renderDash();
+updateBadges();
+</script>
+</body>
+<script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+</script>
+</html>

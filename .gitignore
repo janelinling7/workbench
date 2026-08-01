@@ -1,0 +1,16 @@
+# 系统文件
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# 依赖与构建
+node_modules/
+dist/
+*.log
+
+# Vercel 本地缓存
+.vercel/
+
+# 编辑器
+.vscode/
+.idea/
